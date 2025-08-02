@@ -1,0 +1,137 @@
+body {
+    /* remove margins and scroll bars */
+    margin: 0;
+
+    /*
+      Set the container's background color to the same as the scene's
+      background to prevent flashing on load
+    */
+    background-color: #202032;
+
+    /* style text */
+    text-align: center;
+    font-size: 12px;
+    font-family: Sans-Serif;
+    color: Gainsboro;
+    overflow: auto;
+    
+}
+
+
+#scene-container {
+    /* tell our scene container to take up the full page */
+    margin: 0pt;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: auto; 
+    right: 0;
+}
+
+#text{
+    position: relative;
+    width: 40%;
+    height: auto;
+    overflow: scroll;
+    visibility: visible;
+    
+    margin-left: 20pt;
+    text-align: left;
+    text-justify: inter-word;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    font-family: Helvetica, sans-serif;
+    font-size: 10pt;
+    line-height: 1.7;
+}
+
+h1 {
+    font-weight: bold;
+    font-size: 48px;
+    letter-spacing: 5px;
+    margin-bottom: 0px;
+  }
+  h2 {
+    letter-spacing: 2px;
+    margin-top: 20px;
+    margin-bottom: 0px;
+  }  
+mark {
+    background-color: transparent;
+    color: #ffabbd;
+  }
+  a {
+    color: #5dcf84;
+  }
+#text img{
+    padding: 15px;
+}
+#signature{
+  width: 40%;
+  position:relative;
+  visibility: visible;
+
+  text-align: right;
+  margin-top: 40pt;
+  margin-bottom: 10pt;
+  line-height: 15pt;
+}
+
+#rotateMessage{
+  position: fixed;
+  z-index: 1;
+  text-align: left;
+  left: 10pt;
+  bottom: 10pt; 
+  visibility: hidden;
+}
+
+@media screen and (orientation:portrait)
+{
+  #text{
+    visibility: hidden;
+    width: 85%;
+    height: 0;
+  }
+  #signature{
+    visibility: hidden;
+    width: 95%;
+  }
+  #rotateMessage{
+    visibility: visible;
+  }
+}
+
+.fa-brands{
+    letter-spacing: 7pt;
+}
+
+.dg .c .slider-fg {
+    background: #51b574 !important;
+}
+.dg .cr.number input[type=text] {
+    color: #51b574 !important;
+}
+.dg .c input[type=checkbox] {
+    accent-color: #51b574 !important;
+}
+#gui {
+  position: absolute !important;
+  /* height: 100% !important;
+  left: 5% !important; */
+  top: 0px !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: 0px !important; 
+}
+#stats {
+  position: fixed !important;
+  top: auto !important;
+  bottom: 10pt !important;
+  left: auto !important;
+  right: 0pt !important;
+}
+
+/*# sourceMappingURL=main.css.map*/
