@@ -36,7 +36,7 @@ let updatables;
 let clock, stats;
 
 class World{
-    constructor(container, volumeImages) {
+    constructor(container, volumeImages, numberOfAgents=3000) {
         updatables = [];
         // Scene
         scene = new Scene();
@@ -105,7 +105,7 @@ class World{
         const resizer = new Resizer(container, camera, renderer);
 
         // Objects
-        let agents = new Agents(3000);
+        let agents = new Agents(numberOfAgents);
         window.addEventListener("resize", _ => {    agents.uniforms.aspect.value = resizer.aspect   });
         let hunter = new Hunter();
         agents.setHunter(hunter);
@@ -166,7 +166,7 @@ class World{
         volumeFolder.add(channelValue, 'selectedOption2', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (blue)").onChange((value) => {
             agents.setVolume2(volumeImages[value]);
         });
-        volumeFolder.add(channelValue, 'selectedOption3', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (blue)").onChange((value) => {
+        volumeFolder.add(channelValue, 'selectedOption3', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (green)").onChange((value) => {
             agents.setVolume3(volumeImages[value]);
         });
 
@@ -175,13 +175,13 @@ class World{
             selectedOption2: true,
             selectedOption3: true
         }
-        const channelOnController = volumeFolder.add(channelOn, "selectedOption").onChange((value) => {
+        const channelOnController = volumeFolder.add(channelOn, "selectedOption").name("red").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
         });
-        const channelOnController2 = volumeFolder.add(channelOn, "selectedOption2").onChange((value) => {
+        const channelOnController2 = volumeFolder.add(channelOn, "selectedOption2").name("blue").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
         });
-        const channelOnController3 = volumeFolder.add(channelOn, "selectedOption3").onChange((value) => {
+        const channelOnController3 = volumeFolder.add(channelOn, "selectedOption3").name("green").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
         });
 

@@ -10,6 +10,12 @@ import {World} from "./World/World.js";
 async function main() {
     console.log("Document is ready. Initializing scene...");
 
+    // how many agents should we use?
+    let numAgents = 700;
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('stars'))
+        numAgents = urlParams.get('stars');
+
     // list of channels
     // CD3 (19), CD20 (27), CD11b (37), CD4 (25) and Catalase (59) (plus Hoechst - 44)
     var channels = ['channel_19.png', 'channel_27.png', 'channel_37.png', 'channel_42.png', 'channel_25.png', 'channel_59.png', 'channel_44.png'];
@@ -33,7 +39,7 @@ async function main() {
         msg.style.display = 'none'; // hide the messages
         //jQuery('#messages').hide(); // hide the messages
         const sceneContainer = document.getElementById('scene-container');
-        const world = new World(sceneContainer, volumes);
+        const world = new World(sceneContainer, volumes, numAgents);
         world.start();
     });
 
