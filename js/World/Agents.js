@@ -24,6 +24,9 @@ class Agents{
         this.TAU_SPEED = 0.01;     // how quick to restore the desired speed
 
         this.FIRE_CYCLE = 3;     // how often to fire, s
+        // lets convert the FIRE_CYCLE to BBM
+        this.BPM = 60.0 / this.FIRE_CYCLE;  // 60 / this.FIRE_CYCLE
+
         this.NUDGE_FACTOR = 0.003;
         this.NUDGE_LIMIT = 3;           // max number of times an agent can nudge its clock per frame
         this.CONFUSION_FACTOR = 0.2;   // confuse the clock when fleeing
@@ -45,12 +48,15 @@ class Agents{
         this.hunterPos = new Vector3;   // remembers hunter's position
         this.fleeing = [];              // agents that have to flee
         this.volumeField = null; // gradient field to follow
+        this.volumeField2 = null; // gradient field to follow
+        this.volumeField3 = null; // gradient field to follow
 
         this.count = count;
         this.posArray  = new Float32Array(count*3);
         this.velArray  = new Float32Array(count*3);
         this.frcArray  = new Float32Array(count*3);
         this.clockArray = new Float32Array(count);
+        this.channelArray = new Int8Array(count); // channel index for each agent
         this.nudgedArray = new Float32Array(count); // how many times was nudged at the last frame
         this.grid = new UnitGrid(); // grid to find neighbors and distances
 
@@ -59,18 +65,25 @@ class Agents{
             pointInSphere(this.HABITAT = 0.9).toArray(this.posArray, ID*3); // random pos
             pointInSphere().normalize().multiplyScalar(this.DESIRED_SPEED/5).toArray(this.velArray,ID*3); // random vel
             this.clockArray[ID] = Math.random()*this.FIRE_CYCLE; // initialize clock with a random value
+            //this.channelArray[ID] = 0;
+            //if (ID > this.count/2) {
+            //    this.channelArray[ID] = 1; // half of the agents are in channel 1
+            //}
         }
+        this.setChannelID([true, true, true], false);
 
         //Shaders
         this.uniforms = {
             fireCycle:      {value: this.FIRE_CYCLE},
             size:           { value: 0.35*window.devicePixelRatio },
-            bodyColor:      { value: new Color(0x70ffa1)},
+            bodyColor:      { value: new Color(0x7474ff)}, // { value: new Color(0x70ffa1)},
             fireColor:      { value: new Color(0xff747b)},
-            bodySize:       { value: 0.05},
+            fireColor2:     { value: new Color(0x7474ff)},
+            fireColor3:     { value: new Color(0xb3e2cd)},
+            bodySize:       { value: 0.02}, // default was 0.05
             bodyOpacity:    { value: 0.2},
-            fireR1: {value : 0.015},
-            fireR2: {value : 0.0015},
+            fireR1: {value : 0.002 /* 0.015 */},
+            fireR2: {value : 0.0001 /* 0.0015 */},
             aspect: {value: 1.0}
         }
         let shaderMaterial =  new ShaderMaterial({
@@ -88,6 +101,9 @@ class Agents{
         this.geometry.setAttribute('position', this.positionAttribute );
         this.clockAttribute = new BufferAttribute(this.clockArray,1).setUsage( DynamicDrawUsage );
         this.geometry.setAttribute('clock', this.clockAttribute );
+        this.channelAttribute = new BufferAttribute(this.channelArray, 1).setUsage( DynamicDrawUsage );
+        this.geometry.setAttribute('channel', this.channelAttribute );
+
         this.mesh = new Points(this.geometry, shaderMaterial);
 
     }
@@ -106,11 +122,29 @@ class Agents{
             this.fire(ID, delta, neighborsPerID);
 
             frcVec.set(0, 0, 0); // if we have a gradient field, we can use it to nudge the agents
-            if (this.volumeField != null) {
+            if (this.channelArray[ID] == 0 && this.volumeField != null) {
                 let loc = new Vector3().fromArray(this.posArray, ID * 3);
                 let [slice, x, y] = this.volumeField.getLoc2Idx(loc);
                 if (slice !== null) {
                     frcVec.addScaledVector(this.volumeField.getGradValue(slice, x, y),this.GRADIENT_SCALER);
+                } else {
+                    // back into the volume
+                    frcVec.addScaledVector(loc.negate(), 0.01);
+                }
+            } else if (this.channelArray[ID] == 1 && this.volumeField2 != null) {
+                let loc = new Vector3().fromArray(this.posArray, ID * 3);
+                let [slice, x, y] = this.volumeField2.getLoc2Idx(loc);
+                if (slice !== null) {
+                    frcVec.addScaledVector(this.volumeField2.getGradValue(slice, x, y),this.GRADIENT_SCALER);
+                } else {
+                    // back into the volume
+                    frcVec.addScaledVector(loc.negate(), 0.01);
+                }
+            } else if (this.channelArray[ID] == 2 && this.volumeField3 != null) {
+                let loc = new Vector3().fromArray(this.posArray, ID * 3);
+                let [slice, x, y] = this.volumeField3.getLoc2Idx(loc);
+                if (slice !== null) {
+                    frcVec.addScaledVector(this.volumeField3.getGradValue(slice, x, y),this.GRADIENT_SCALER);
                 } else {
                     // back into the volume
                     frcVec.addScaledVector(loc.negate(), 0.01);
@@ -240,6 +274,21 @@ class Agents{
     }
     setVolume(vol) {
         this.volumeField = vol;
+    }
+    setVolume2(vol) {
+        this.volumeField2 = vol;
+    }
+    setVolume3(vol) {
+        this.volumeField3 = vol;
+    }
+    setChannelID(on=[TRUE,TRUE,TRUE], needsUpdate=FALSE) {
+        // get a list of the ids that are enabled (at least one should be enabled)
+        let vals = on.map(function(a, idx) { if (a) return idx; else null; }).filter(function(a) { if (a != undefined) return true; return false; })
+        for (var ID = 0; ID < this.channelArray.length; ID++) {
+            this.channelArray[ID] = vals[ID % vals.length];
+        }
+        if (needsUpdate)
+            this.mesh.geometry.attributes.channel.needsUpdate = true;
     }
 }
 

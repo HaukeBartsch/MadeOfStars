@@ -19,8 +19,16 @@
 <body>
 
 <div id="scene-container"></div>
+<div id="messages">
+  <div class="neon-text">
+    <p style="padding-bottom: 0px; margin-bottom: 0px;">Multi-channel Microscopy Structures</p>
+    <h1>
+      Made of Stars
+    </h1>
+    <p style="padding-top: 0px; margin-top: 0px;">(loading specimen LSP13626, <i>Melanoma in-situ</i>)</p>
+  </div>
+</div>
 
-<script type="javascript/text" src="js/jquery-3.7.1.min.js"></script>
 <script type="module" src="js/all.js"></script>
 </body>
 </html>

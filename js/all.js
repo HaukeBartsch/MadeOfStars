@@ -7,9 +7,37 @@ import {World} from "./World/World.js";
 // volume image
 
 
-function main() {
+async function main() {
     console.log("Document is ready. Initializing scene...");
 
+    // list of channels
+    // CD3 (19), CD20 (27), CD11b (37), CD4 (25) and Catalase (59) (plus Hoechst - 44)
+    var channels = ['channel_19.png', 'channel_27.png', 'channel_37.png', 'channel_42.png', 'channel_25.png', 'channel_59.png', 'channel_44.png'];
+    //var channels = ['channel_44.png' ];
+    var volumes = [];
+
+    const promises = [];
+    channels.forEach(channel => {
+        volumes.push(new Volume(channel));
+
+        promises.push(new Promise((resolve) => {
+            volumes[volumes.length -1].addEventListener('loaded', (event) => {
+                console.log("image loaded " + event.detail.slices + " slices");
+                resolve();
+            });
+        }));
+    });
+
+    await Promise.all(promises).then(() => {
+        const msg = document.getElementById('messages');
+        msg.style.display = 'none'; // hide the messages
+        //jQuery('#messages').hide(); // hide the messages
+        const sceneContainer = document.getElementById('scene-container');
+        const world = new World(sceneContainer, volumes);
+        world.start();
+    });
+
+  /*  
     var volumeImage = new Volume('channel_44.png');
 
     volumeImage.addEventListener('loaded', (event) => {
@@ -17,7 +45,7 @@ function main() {
         const sceneContainer = document.getElementById('scene-container');
         const world = new World(sceneContainer, volumeImage);
         world.start();
-    });
+    }); */
 }
 
 main();

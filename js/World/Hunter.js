@@ -23,7 +23,7 @@ class Hunter {
         this.CHASE_FACTOR = 0.3;
         this.HABITAT_FACTOR = 1;
 
-        this.enable = true;
+        this.enable = false;
 
         pos = pointInSphere(0.5);
         vel = pointInSphere().normalize().multiplyScalar(this.DESIRED_SPEED);
