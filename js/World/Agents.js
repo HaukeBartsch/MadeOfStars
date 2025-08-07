@@ -70,13 +70,14 @@ class Agents{
             //    this.channelArray[ID] = 1; // half of the agents are in channel 1
             //}
         }
+        // distribute the stars to the different channels
         this.setChannelID([true, true, true], false);
 
         //Shaders
         this.uniforms = {
             fireCycle:      {value: this.FIRE_CYCLE},
             size:           { value: 0.35*window.devicePixelRatio },
-            bodyColor:      { value: new Color(0x7474ff)}, // { value: new Color(0x70ffa1)},
+            bodyColor:      { value: new Color(0x747474)}, // { value: new Color(0x70ffa1)},
             fireColor:      { value: new Color(0xff747b)},
             fireColor2:     { value: new Color(0x7474ff)},
             fireColor3:     { value: new Color(0xb3e2cd)},
