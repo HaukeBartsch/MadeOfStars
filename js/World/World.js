@@ -12,6 +12,8 @@ import {
     Mesh,
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { TrackballControls } from 'three/addons/controls/TrackballControls.js'
+import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
 import { Resizer } from "./Resizer.js";
 //import Stats from './stats.min.js';
 
@@ -34,12 +36,12 @@ let updatables;
 let clock, stats;
 
 class World{
-    constructor(container, volumeImage) {
+    constructor(container, volumeImages) {
         updatables = [];
         // Scene
         scene = new Scene();
         const loader = new TextureLoader();
-        let backgroundTexture = loader.load('https://raw.githubusercontent.com/dekrvch/Floids/main/src/assets/background.svg');
+        let backgroundTexture = loader.load('js/assets/background_darker.svg');
         scene.background = backgroundTexture;
         // Camera
         camera = new PerspectiveCamera(
@@ -49,7 +51,7 @@ class World{
             100, // far clipping plane
         );
         //camera.position.set(0, 0, 2.2);
-        camera.position.set(0, 0, 0);
+        camera.position.set(0, 0, 2); // see the Resizer for the camera position
         camera.lookAt(new Vector3(0, 0, 0));
         camera.up.set(0, 1, 0); // set the up direction of
 
@@ -57,16 +59,27 @@ class World{
         renderer = new WebGLRenderer({ antialias: true,  alpha: true });
 
         container.append(renderer.domElement);
+
         // Orbit Controls
-        const controls = new OrbitControls(camera, container)
+        //const controls = new OrbitControls(camera, container)
+
+        // Trackball Controls (does not work well, better to use either OrbitControls or ArcballControls)
+        //const controls = new TrackballControls(camera, container);
+        //controls.staticMoving = true; // to avoid jittering
+        //controls.rotateSpeed = 10.0;
+
+        // Arcball Controls
+        const controls = new ArcballControls(camera, container);
+
         controls.enableDamping = false;
-        controls.dampingFactor = 0.001;
+        controls.dampingFactor = 0.1;
         controls.enableZoom = true;
-        controls.enablePan = false;
+        controls.enablePan = true;
         controls.quickVec = new Vector3;
         let yAxis = new Vector3(0, 1, 0);
         controls.tick = () => {
-            controls.update();
+            // Not needed if we use the ArcballControls - but for all other controls we need this
+            //controls.update();
         }
         updatables.push(controls);
         // Clock
@@ -86,23 +99,36 @@ class World{
         });
 
         const cube = new Mesh(geometry_cube, material_cube)
-        scene.add(cube)
+        //scene.add(cube)
 
         // Resizer
         const resizer = new Resizer(container, camera, renderer);
 
         // Objects
-        let agents = new Agents(2000);
+        let agents = new Agents(3000);
         window.addEventListener("resize", _ => {    agents.uniforms.aspect.value = resizer.aspect   });
         let hunter = new Hunter();
         agents.setHunter(hunter);
-        agents.setVolume(volumeImage);
+
+        agents.setVolume(volumeImages[6]); // Hoechst
+        agents.setVolume2(volumeImages[5]); // Catalase
+        agents.setVolume3(volumeImages[4]); // Catalase
         updatables.push(agents, hunter);
         scene.add(agents.mesh, hunter.mesh);
         
         // GUI
         const firingFolder = gui.addFolder('Firing')
-        firingFolder.add(agents, 'FIRE_CYCLE', 0.5, 5).step(0.1).name("Cycle");
+        const fire_cycle_controller = firingFolder.add(agents, 'FIRE_CYCLE', 0.1, 50).step(0.1).name("Cycle");
+        const bpm_controller = firingFolder.add(agents, 'BPM', 1, 200).step(1).name("BPM").onChange((value) => {
+            agents.FIRE_CYCLE = 60.0 / value;
+            fire_cycle_controller.updateDisplay();
+            // value = 60 / FIRE_CYCLE
+            // FIRE_CYCLE = 60 / value
+        });
+        fire_cycle_controller.onChange((value) => {
+            agents.BPM = 60 / value;
+            bpm_controller.updateDisplay();
+        });
         firingFolder.add(agents, 'NUDGE_FACTOR', 0, 0.03).step(0.003).name("Nudging");
         firingFolder.add(agents.uniforms.fireR2, 'value', 0, 0.006).step(0.0001).name("Body fire");
         firingFolder.add(agents.uniforms.fireR1, 'value', 0, 0.06).step(0.001).name("Diffused fire");
@@ -122,6 +148,43 @@ class World{
 
         const volumeFolder = gui.addFolder('Volume');
         volumeFolder.add(agents, 'GRADIENT_SCALER', 0, 10).step(0.001).name("Gradient scaling");
+        //volumeFolder.add(this, 'CURRENT_VOLUME_INDEX', 0, volumeImages.length).step(1).name("Volume");
+        //let world = this;
+        //const changeVolumeButton = { changeVolume: function() { 
+        //    agents.setVolume(volumeImages[world.CURRENT_VOLUME_INDEX]); 
+        //}};
+        //volumeFolder.add(changeVolumeButton, 'changeVolume').name("Change volume");
+
+        const channelValue = {
+            selectedOption: 6, // default channel is "Hoechst"
+            selectedOption2: 5, // default channel is "Catalase"
+            selectedOption3: 4 // default channel is "Catalase"
+        }
+        volumeFolder.add(channelValue, 'selectedOption', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (red)").onChange((value) => {
+            agents.setVolume(volumeImages[value]);
+        });
+        volumeFolder.add(channelValue, 'selectedOption2', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (blue)").onChange((value) => {
+            agents.setVolume2(volumeImages[value]);
+        });
+        volumeFolder.add(channelValue, 'selectedOption3', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (blue)").onChange((value) => {
+            agents.setVolume3(volumeImages[value]);
+        });
+
+        const channelOn = {
+            selectedOption: true,
+            selectedOption2: true,
+            selectedOption3: true
+        }
+        const channelOnController = volumeFolder.add(channelOn, "selectedOption").onChange((value) => {
+            agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
+        });
+        const channelOnController2 = volumeFolder.add(channelOn, "selectedOption2").onChange((value) => {
+            agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
+        });
+        const channelOnController3 = volumeFolder.add(channelOn, "selectedOption3").onChange((value) => {
+            agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
+        });
+
         //let textParam = {show: false};
         //let textCheckBox = gui.add(textParam, "show").name("Show Explanation").onChange((show) => {
         //    document.getElementById("text").style.visibility = show ? "visible" : "hidden";
