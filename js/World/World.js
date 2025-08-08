@@ -35,8 +35,21 @@ let composer;
 let updatables;
 let clock, stats;
 
+async function copyStringToClipboard(textToCopy) {
+  try {
+    await navigator.clipboard.writeText(textToCopy);
+    console.log('Text successfully copied to clipboard');
+  } catch (err) {
+    console.error('Failed to copy text: ', err);
+  }
+}
+
 class World{
-    constructor(container, volumeImages, numberOfAgents=3000) {
+    constructor(container, volumeImages, config) {
+
+        //var numberOfAgents = config.numAgents || 700;
+
+
         updatables = [];
         // Scene
         scene = new Scene();
@@ -105,14 +118,14 @@ class World{
         const resizer = new Resizer(container, camera, renderer);
 
         // Objects
-        let agents = new Agents(numberOfAgents);
-        window.addEventListener("resize", _ => {    agents.uniforms.aspect.value = resizer.aspect   });
+        let agents = new Agents(config);
+        window.addEventListener("resize", _ => { agents.uniforms.aspect.value = resizer.aspect });
         let hunter = new Hunter();
         agents.setHunter(hunter);
 
-        agents.setVolume(volumeImages[6]); // Hoechst
-        agents.setVolume2(volumeImages[5]); // Catalase
-        agents.setVolume3(volumeImages[4]); // Catalase
+        agents.setVolume(volumeImages[config.channelID1]); // Hoechst
+        agents.setVolume2(volumeImages[config.channelID2]); // Catalase
+        agents.setVolume3(volumeImages[config.channelID3]); // Catalase
         updatables.push(agents, hunter);
         scene.add(agents.mesh, hunter.mesh);
         
@@ -156,18 +169,21 @@ class World{
         //volumeFolder.add(changeVolumeButton, 'changeVolume').name("Change volume");
 
         const channelValue = {
-            selectedOption: 6, // default channel is "Hoechst"
-            selectedOption2: 5, // default channel is "Catalase"
-            selectedOption3: 4 // default channel is "CD4"
+            selectedOption: config.channelID1, // default channel is "Hoechst"
+            selectedOption2: config.channelID2, // default channel is "Catalase"
+            selectedOption3: config.channelID3 // default channel is "CD4"
         }
         volumeFolder.add(channelValue, 'selectedOption', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (red)").onChange((value) => {
             agents.setVolume(volumeImages[value]);
+            agents.channelID1 = parseInt(value);
         });
         volumeFolder.add(channelValue, 'selectedOption2', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (blue)").onChange((value) => {
             agents.setVolume2(volumeImages[value]);
+            agents.channelID2 = parseInt(value);
         });
         volumeFolder.add(channelValue, 'selectedOption3', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (green)").onChange((value) => {
             agents.setVolume3(volumeImages[value]);
+            agents.channelID3 = parseInt(value);
         });
 
         const channelOn = {
@@ -177,13 +193,27 @@ class World{
         }
         const channelOnController = volumeFolder.add(channelOn, "selectedOption").name("red").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
+            agents.enableChannel1 = value;
         });
         const channelOnController2 = volumeFolder.add(channelOn, "selectedOption2").name("blue").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
+            agents.enableChannel2 = value;
         });
         const channelOnController3 = volumeFolder.add(channelOn, "selectedOption3").name("green").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
+            agents.enableChannel3 = value;
         });
+
+        const linkButton = { getLink: function(){  
+            var c = agents.getConfig();
+            // convert to a URL
+            const params = new URLSearchParams(c);
+            const queryString = params.toString();
+
+            copyStringToClipboard(window.location.href + "/?" + queryString);
+        }};
+        volumeFolder.add(linkButton,'getLink').name("Copy bookmark");
+
 
         //let textParam = {show: false};
         //let textCheckBox = gui.add(textParam, "show").name("Show Explanation").onChange((show) => {

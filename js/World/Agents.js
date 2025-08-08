@@ -19,31 +19,42 @@ let quickVec1 = new Vector3;
 let quickVec2 = new Vector3;
 
 class Agents{
-    constructor(count) {
-        this.DESIRED_SPEED = 0.001;  // restores this speed with time
-        this.TAU_SPEED = 0.01;     // how quick to restore the desired speed
+    constructor(config) {
 
-        this.FIRE_CYCLE = 3;     // how often to fire, s
+        var count = config.numAgents ?? 700;
+        this.enableChannel1 = config.enableChannel1 ?? true;
+        this.enableChannel2 = config.enableChannel2 ?? true;
+        this.enableChannel3 = config.enableChannel3 ?? false;
+        this.channelID1 = config.channelID1 ?? 5;
+        this.channelID2 = config.channelID2 ?? 6;
+        this.channelID3 = config.channelID3 ?? 4;
+
+        this.config = config;
+
+        this.DESIRED_SPEED = config.DESIRED_SPEED ?? 0.001;  // restores this speed with time
+        this.TAU_SPEED = config.TAU_SPEED ?? 0.01;     // how quick to restore the desired speed
+
+        this.FIRE_CYCLE = config.FIRE_CYCLE ?? 3;     // how often to fire, s
         // lets convert the FIRE_CYCLE to BBM
         this.BPM = 60.0 / this.FIRE_CYCLE;  // 60 / this.FIRE_CYCLE
 
-        this.NUDGE_FACTOR = 0.003;
-        this.NUDGE_LIMIT = 3;           // max number of times an agent can nudge its clock per frame
-        this.CONFUSION_FACTOR = 0.2;   // confuse the clock when fleeing
+        this.NUDGE_FACTOR = config.NUDGE_FACTOR ?? 0.003;
+        this.NUDGE_LIMIT = config.NUDGE_LIMIT ?? 3;           // max number of times an agent can nudge its clock per frame
+        this.CONFUSION_FACTOR = config.CONFUSION_FACTOR ?? 0.2;   // confuse the clock when fleeing
 
-        this.VISIBLE_RADIUS = 0.15;   // align and cohere with other agents in this range
-        this.PROTECTED_RADIUS = 0.05; // avoid other agents in this range
-        this.FLEE_RADIUS = 0.30;       // flee from hunter in this range
-        this.HABITAT_RADIUS = 1.8;    // gets pushed back if outside of habitat
-        this.USE_GRID = true;
+        this.VISIBLE_RADIUS = config.VISIBLE_RADIUS ?? 0.15;   // align and cohere with other agents in this range
+        this.PROTECTED_RADIUS = config.PROTECTED_RADIUS ?? 0.05; // avoid other agents in this range
+        this.FLEE_RADIUS = config.FLEE_RADIUS ?? 0.30;       // flee from hunter in this range
+        this.HABITAT_RADIUS = config.HABITAT_RADIUS ?? 1.8;    // gets pushed back if outside of habitat
+        this.USE_GRID = config.USE_GRID ?? true;
 
-        this.ALIGN_FACTOR = 0.02;
-        this.COHERE_FACTOR = 0;
-        this.AVOID_FACTOR = 0.1;
-        this.FLEE_FACTOR = 3;  // flee from hunter
-        this.HABITAT_FACTOR = 0.1;
+        this.ALIGN_FACTOR = config.ALIGN_FACTOR ?? 0.02;
+        this.COHERE_FACTOR = config.COHERE_FACTOR ?? 0;
+        this.AVOID_FACTOR = config.AVOID_FACTOR ?? 0.1;
+        this.FLEE_FACTOR = config.FLEE_FACTOR ?? 3;  // flee from hunter
+        this.HABITAT_FACTOR = config.HABITAT_FACTOR ?? 0.1;
 
-        this.GRADIENT_SCALER = 0.5; // how much to scale the gradient field
+        this.GRADIENT_SCALER = config.GRADIENT_SCALER ?? 0.5; // how much to scale the gradient field
 
         this.hunterPos = new Vector3;   // remembers hunter's position
         this.fleeing = [];              // agents that have to flee
@@ -71,21 +82,30 @@ class Agents{
             //}
         }
         // distribute the stars to the different channels
-        this.setChannelID([true, true, false], false);
+        this.setChannelID([this.enableChannel1, this.enableChannel2, this.enableChannel3], false);
 
+        this.bodyColor = config.bodyColor ?? "#747474";
+        this.fireColor = config.fireColor ?? "#ff747b";
+        this.fireColor2 = config.fireColor2 ?? "#7474ff";
+        this.fireColor3 = config.fireColor3 ?? "#b3e2cd";
+        this.bodySize = config.bodySize ?? 0.02;
+        this.bodyOpacity = config.bodyOpacity ?? 0.2;
+        this.fireR1 = config.fireR1 ?? 0.002;
+        this.fireR2 = config.fireR2 ?? 0.0001;
+        this.aspect = config.aspect ?? 1.0;
         //Shaders
         this.uniforms = {
             fireCycle:      {value: this.FIRE_CYCLE},
             size:           { value: 0.35*window.devicePixelRatio },
-            bodyColor:      { value: new Color(0x747474)}, // { value: new Color(0x70ffa1)},
-            fireColor:      { value: new Color(0xff747b)},
-            fireColor2:     { value: new Color(0x7474ff)},
-            fireColor3:     { value: new Color(0xb3e2cd)},
-            bodySize:       { value: 0.02}, // default was 0.05
-            bodyOpacity:    { value: 0.2},
-            fireR1: {value : 0.002 /* 0.015 */},
-            fireR2: {value : 0.0001 /* 0.0015 */},
-            aspect: {value: 1.0}
+            bodyColor:      { value: new Color(this.bodyColor)}, // { value: new Color(0x70ffa1)},
+            fireColor:      { value: new Color(this.fireColor)},
+            fireColor2:     { value: new Color(this.fireColor2)},
+            fireColor3:     { value: new Color(this.fireColor3)},
+            bodySize:       { value: this.bodySize}, // default was 0.05
+            bodyOpacity:    { value: this.bodyOpacity},
+            fireR1: {value : this.fireR1 /* 0.015 */},
+            fireR2: {value : this.fireR2 /* 0.0015 */},
+            aspect: {value: this.aspect}
         }
         let shaderMaterial =  new ShaderMaterial({
             uniforms: this.uniforms,
@@ -107,6 +127,44 @@ class Agents{
 
         this.mesh = new Points(this.geometry, shaderMaterial);
 
+    }
+    // return the current config object
+    getConfig() {
+        return {
+            numAgents: this.config.numAgents,
+            channelID1: this.channelID1,
+            channelID2: this.channelID2,
+            channelID3: this.channelID3,
+            enableChannel1: this.enableChannel1,
+            enableChannel2: this.enableChannel2,
+            enableChannel3: this.enableChannel3,
+            DESIRED_SPEED: this.DESIRED_SPEED,
+            TAU_SPEED: this.TAU_SPEED,
+            FIRE_CYCLE: this.FIRE_CYCLE,
+            NUDGE_FACTOR: this.NUDGE_FACTOR,
+            NUDGE_LIMIT: this.NUDGE_LIMIT,
+            CONFUSION_FACTOR: this.CONFUSION_FACTOR,
+            VISIBLE_RADIUS: this.VISIBLE_RADIUS,
+            PROTECTED_RADIUS: this.PROTECTED_RADIUS,
+            FLEE_RADIUS: this.FLEE_RADIUS,
+            HABITAT_RADIUS: this.HABITAT_RADIUS,
+            USE_GRID: this.USE_GRID,
+            ALIGN_FACTOR: this.ALIGN_FACTOR,
+            COHERE_FACTOR: this.COHERE_FACTOR,
+            AVOID_FACTOR: this.AVOID_FACTOR,
+            FLEE_FACTOR: this.FLEE_FACTOR,
+            HABITAT_FACTOR: this.HABITAT_FACTOR,
+            GRADIENT_SCALER: this.GRADIENT_SCALER,
+            bodyColor: this.bodyColor,
+            fireColor: this.fireColor,
+            fireColor2: this.fireColor2,
+            fireColor3: this.fireColor3,
+            bodySize: this.bodySize,
+            bodyOpacity: this.bodyOpacity,
+            fireR1: this.fireR1,
+            fireR2: this.fireR2,
+            aspect: this.aspect
+        };
     }
     /**
      * Update position and velocity of the agents
