@@ -158,7 +158,7 @@ class World{
         const channelValue = {
             selectedOption: 6, // default channel is "Hoechst"
             selectedOption2: 5, // default channel is "Catalase"
-            selectedOption3: 4 // default channel is "Catalase"
+            selectedOption3: 4 // default channel is "CD4"
         }
         volumeFolder.add(channelValue, 'selectedOption', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (red)").onChange((value) => {
             agents.setVolume(volumeImages[value]);
@@ -173,7 +173,7 @@ class World{
         const channelOn = {
             selectedOption: true,
             selectedOption2: true,
-            selectedOption3: true
+            selectedOption3: false
         }
         const channelOnController = volumeFolder.add(channelOn, "selectedOption").name("red").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);

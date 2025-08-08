@@ -19,6 +19,7 @@ async function main() {
     // list of channels
     // CD3 (19), CD20 (27), CD11b (37), CD4 (25) and Catalase (59) (plus Hoechst - 44)
     var channels = ['channel_19.png', 'channel_27.png', 'channel_37.png', 'channel_42.png', 'channel_25.png', 'channel_59.png', 'channel_44.png'];
+    var channels = ['gradient_19.bin.gz', 'gradient_27.bin.gz', 'gradient_37.bin.gz', 'gradient_42.bin.gz', 'gradient_25.bin.gz', 'gradient_59.bin.gz', 'gradient_44.bin.gz'];
     //var channels = ['channel_44.png' ];
     var volumes = [];
 

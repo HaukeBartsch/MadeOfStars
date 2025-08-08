@@ -1,129 +1,158 @@
 import { Vector3 } from 'three';
 
-// TODO: rewrite this to work in the background (WebWorker) to allow for animations while loading
-
+// images can be loaded as png in mosaic format - computation of gradient field inside application
+// images can also be loaded as gradients with extension .bin.gz (we assume we know the size and number of tiles)
 
 class Volume extends EventTarget {
     constructor(image_file_name, CB) {
         super();
-        this.volumeData = new Image();
-        this.volumeData.src = image_file_name;
-        this.volumeData.onload = () => {
-            console.log("Volume data loaded successfully.");
-            
-            this.canvas = document.createElement('canvas');
-            this.canvas.width = this.volumeData.width;
-            this.canvas.height = this.volumeData.height;
-            const ctx = this.canvas.getContext('2d');
-            
-            ctx.drawImage(this.volumeData, 0, 0);
-            
-            this.imageData = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-            this.pixels = this.imageData.data; // This is the Uint8ClampedArray
-            
-            this.tilewidth = this.volumeData.width / 14;
-            this.tileheight = this.volumeData.height / 14;
-            this.numSlices = 14 * 14; // 196 slices
-            
-            // we need to position our gradient field in the volume. flock values currently seem to be in -1..1 range
-            this.voxelSize = new Vector3(1 / this.tilewidth, 1 / this.tileheight, 1 / this.tileheight);
-            this.positionOffset = new Vector3(-(this.voxelSize.x * this.tilewidth)/2.0, -(this.voxelSize.y * this.tileheight)/2.0, -(this.voxelSize.z * this.numSlices)/2.0); // offset to center the volume in the unit cube
-            
-            // here we can create a webworker to import the pixel data and to compute the gradient field
-            if (window.Worker) {
+
+        // we can support two modes, either the image_file_name is a binary buffer like gradient_44.bin(.gz) or a png
+        if (image_file_name.endsWith(".png")) {
+
+            this.volumeData = new Image();
+            this.volumeData.src = image_file_name;
+            this.volumeData.onload = () => {
+                console.log("Volume data loaded successfully.");
                 
-                // our web worker code is many times slower than the main thread, maybe chrome is not doing the same optimizations as in the main thread?
-                (function (us) {
-                    let loader = new Worker("./js/World/VolumeWebWorker.js");
-                    loader.postMessage({
-                        name: us.volumeData.src,
-                        pixels: us.pixels,
-                        tilewidth: us.volumeData.width / 14,
-                        tileheight: us.volumeData.height / 14,
-                        canvas_width: us.canvas.width,
-                        canvas_height: us.canvas.height,
-                        voxelSize: us.voxelSize,
-                        positionOffset: us.positionOffset,
-                        numSlices: 14 * 14 // 196 slices
-                    });
-                    loader.onmessage = (event) => {
-                        // is us still us?
-                        us.gradientField = event.data;
-                        
-                        var event = new CustomEvent('loaded', { detail: { slices: us.numSlices } });
-                        us.dispatchEvent(event);
-                    }
-                })(this);
-            } else {
+                this.canvas = document.createElement('canvas');
+                this.canvas.width = this.volumeData.width;
+                this.canvas.height = this.volumeData.height;
+                const ctx = this.canvas.getContext('2d');
                 
-                this.scalarField = new Float32Array(this.numSlices * this.tilewidth * this.tileheight);
+                ctx.drawImage(this.volumeData, 0, 0);
                 
-                // Helper to get/set 3D index in 1D array
-                this.scalarIndex = (slice, y, x) => slice * this.tilewidth * this.tileheight + y * this.tileheight + x;
+                this.imageData = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                this.pixels = this.imageData.data; // This is the Uint8ClampedArray
                 
-                // Fill scalarField
-                for (let slice = 0; slice < this.numSlices; slice++) {
-                    for (let y = 0; y < this.tilewidth; y++) {
-                        for (let x = 0; x < this.tileheight; x++) {
-                            this.scalarField[this.scalarIndex(slice, y, x)] = this.getValue(slice, x, y);
+                this.tilewidth = this.volumeData.width / 14;
+                this.tileheight = this.volumeData.height / 14;
+                this.numSlices = 14 * 14; // 196 slices
+                
+                // we need to position our gradient field in the volume. flock values currently seem to be in -1..1 range
+                this.voxelSize = new Vector3(1 / this.tilewidth, 1 / this.tileheight, 1 / this.tileheight);
+                this.positionOffset = new Vector3(-(this.voxelSize.x * this.tilewidth)/2.0, -(this.voxelSize.y * this.tileheight)/2.0, -(this.voxelSize.z * this.numSlices)/2.0); // offset to center the volume in the unit cube
+                
+                // here we can create a webworker to import the pixel data and to compute the gradient field
+                if (window.Worker) {
+                    
+                    // our web worker code is many times slower than the main thread, maybe chrome is not doing the same optimizations as in the main thread?
+                    (function (us) {
+                        let loader = new Worker("./js/World/VolumeWebWorker.js");
+                        loader.postMessage({
+                            name: us.volumeData.src,
+                            pixels: us.pixels,
+                            tilewidth: us.volumeData.width / 14,
+                            tileheight: us.volumeData.height / 14,
+                            canvas_width: us.canvas.width,
+                            canvas_height: us.canvas.height,
+                            voxelSize: us.voxelSize,
+                            positionOffset: us.positionOffset,
+                            numSlices: 14 * 14 // 196 slices
+                        });
+                        loader.onmessage = (event) => {
+                            // is us still us?
+                            us.gradientField = event.data;
+                            
+                            var event = new CustomEvent('loaded', { detail: { slices: us.numSlices } });
+                            us.dispatchEvent(event);
+                        }
+                    })(this);
+                } else {
+                    
+                    this.scalarField = new Float32Array(this.numSlices * this.tilewidth * this.tileheight);
+                    
+                    // Helper to get/set 3D index in 1D array
+                    this.scalarIndex = (slice, y, x) => slice * this.tilewidth * this.tileheight + y * this.tileheight + x;
+                    
+                    // Fill scalarField
+                    for (let slice = 0; slice < this.numSlices; slice++) {
+                        for (let y = 0; y < this.tilewidth; y++) {
+                            for (let x = 0; x < this.tileheight; x++) {
+                                this.scalarField[this.scalarIndex(slice, y, x)] = this.getValue(slice, x, y);
+                            }
                         }
                     }
-                }
 
-                this.scalarFieldCopy = new Float32Array(this.scalarField); // copy the scalar field for blurring
-                
-                // blurr the scalar field before computing the gradient
-                for (let slice = 0; slice < this.numSlices; slice++) {
-                    for (let y = 0; y < this.tilewidth; y++) {
-                        for (let x = 0; x < this.tileheight; x++) {
-                            let value = this.getValue(slice, x, y);
-                            // average with neighbors
-                            let sum = value;
-                            let count = 1;
-                            for (let dz = -1; dz <= 1; dz++) {
-                                for (let dy = -1; dy <= 1; dy++) {
-                                    for (let dx = -1; dx <= 1; dx++) {
-                                        if (dx === 0 && dy === 0 && dz === 0) continue; // skip self
-                                        let nx = x + dx;
-                                        let ny = y + dy;
-                                        let nz = slice + dz;
-                                        if (nx >= 0 && nx < this.tilewidth && ny >= 0 && ny < this.tileheight && nz >= 0 && nz < this.numSlices) {
-                                            sum += this.scalarFieldCopy[this.scalarIndex(nz, ny, nx)];
-                                            count++;
+                    this.scalarFieldCopy = new Float32Array(this.scalarField); // copy the scalar field for blurring
+                    
+                    // blurr the scalar field before computing the gradient
+                    for (let slice = 0; slice < this.numSlices; slice++) {
+                        for (let y = 0; y < this.tilewidth; y++) {
+                            for (let x = 0; x < this.tileheight; x++) {
+                                let value = this.getValue(slice, x, y);
+                                // average with neighbors
+                                let sum = value;
+                                let count = 1;
+                                for (let dz = -1; dz <= 1; dz++) {
+                                    for (let dy = -1; dy <= 1; dy++) {
+                                        for (let dx = -1; dx <= 1; dx++) {
+                                            if (dx === 0 && dy === 0 && dz === 0) continue; // skip self
+                                            let nx = x + dx;
+                                            let ny = y + dy;
+                                            let nz = slice + dz;
+                                            if (nx >= 0 && nx < this.tilewidth && ny >= 0 && ny < this.tileheight && nz >= 0 && nz < this.numSlices) {
+                                                sum += this.scalarFieldCopy[this.scalarIndex(nz, ny, nx)];
+                                                count++;
+                                            }
                                         }
                                     }
                                 }
+                                this.scalarField[this.scalarIndex(slice, y, x)] = sum / count;
                             }
-                            this.scalarField[this.scalarIndex(slice, y, x)] = sum / count;
                         }
                     }
-                }
-                delete this.scalarFieldCopy; // we don't need the copy anymore
-                /*            this.scalarField = Array.from({ length: this.numSlices }, () =>
-                    Array.from({ length: this.tilewidth }, () =>
-                        Array.from({ length: this.tileheight }, () => 0)
-                )
-                );
-                for (let slice = 0; slice < this.numSlices; slice++) {
-                // could be sped up if we can assign like in matlab
-                for (let y = 0; y < this.tilewidth; y++) {
-                for (let x = 0; x < this.tileheight; x++) {
-                this.scalarField[slice][y][x] = this.getValue(slice, x, y);
-                }
-                }
-                } */
-                
-                // we would like to compute the gradient for this scalar field
-                this.updateGradient();
-                
-                // we don't need the memory anymore
-                delete this.pixels;
-                delete this.scalarFieldCopy;
+                    delete this.scalarFieldCopy; // we don't need the copy anymore
+                    /*            this.scalarField = Array.from({ length: this.numSlices }, () =>
+                        Array.from({ length: this.tilewidth }, () =>
+                            Array.from({ length: this.tileheight }, () => 0)
+                    )
+                    );
+                    for (let slice = 0; slice < this.numSlices; slice++) {
+                    // could be sped up if we can assign like in matlab
+                    for (let y = 0; y < this.tilewidth; y++) {
+                    for (let x = 0; x < this.tileheight; x++) {
+                    this.scalarField[slice][y][x] = this.getValue(slice, x, y);
+                    }
+                    }
+                    } */
+                    
+                    // we would like to compute the gradient for this scalar field
+                    this.updateGradient();
+                    
+                    // we don't need the memory anymore
+                    delete this.pixels;
+                    delete this.scalarFieldCopy;
 
-                var event = new CustomEvent('loaded', { detail: { slices: this.numSlices } });
-                this.dispatchEvent(event);
-            }
-        };
+                    var event = new CustomEvent('loaded', { detail: { slices: this.numSlices } });
+                    this.dispatchEvent(event);
+                }
+            };
+        } else if (image_file_name.endsWith(".bin.gz")) {
+            this.tilewidth = 5600 / 14;
+            this.tileheight = 5600 / 14;
+            this.numSlices = 14 * 14; // 196 slices
+                
+            // we need to position our gradient field in the volume. flock values currently seem to be in -1..1 range
+            this.voxelSize = new Vector3(1 / this.tilewidth, 1 / this.tileheight, 1 / this.tileheight);
+            this.positionOffset = new Vector3(-(this.voxelSize.x * this.tilewidth)/2.0, -(this.voxelSize.y * this.tileheight)/2.0, -(this.voxelSize.z * this.numSlices)/2.0); // offset to center the volume in the unit cube
+
+            var us = this;
+            fetch(image_file_name).then( async (response) => {
+                var blob = await response.blob();
+                if (blob) {
+                    const ds = new DecompressionStream('gzip');
+                    const decompressedStream = blob.stream().pipeThrough(ds);
+                    const resp = await new Response(decompressedStream).arrayBuffer();
+                    console.log("got an uncompressed response here");
+                    us.gradientField = new Float32Array(resp);
+                    console.log(typeof us.gradientField);
+                    //reader.readAsArrayBuffer(blob);
+                    var event = new CustomEvent('loaded', { detail: { slices: this.numSlices } });
+                    us.dispatchEvent(event);
+                }
+            })
+        }
     }
     // compute a gradient field for the scalar field this.pixels
     updateGradient() {

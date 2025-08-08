@@ -1,0 +1,15 @@
+{
+  "name": "converter",
+  "version": "1.0.0",
+  "description": "Convert mosaic files to gradient arrays suitable for Made of Stars",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "toGradientField.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "pngjs": "^7.0.0"
+  }
+}
