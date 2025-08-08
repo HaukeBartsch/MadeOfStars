@@ -144,9 +144,7 @@ class Volume extends EventTarget {
                     const ds = new DecompressionStream('gzip');
                     const decompressedStream = blob.stream().pipeThrough(ds);
                     const resp = await new Response(decompressedStream).arrayBuffer();
-                    console.log("got an uncompressed response here");
                     us.gradientField = new Float32Array(resp);
-                    console.log(typeof us.gradientField);
                     //reader.readAsArrayBuffer(blob);
                     var event = new CustomEvent('loaded', { detail: { slices: this.numSlices } });
                     us.dispatchEvent(event);

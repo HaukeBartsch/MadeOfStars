@@ -29,7 +29,7 @@ async function main() {
 
         promises.push(new Promise((resolve) => {
             volumes[volumes.length -1].addEventListener('loaded', (event) => {
-                console.log("image loaded " + event.detail.slices + " slices");
+                console.log("gradient loaded for " + channel + ". Found " + event.detail.slices + " slices.");
                 resolve();
             });
         }));

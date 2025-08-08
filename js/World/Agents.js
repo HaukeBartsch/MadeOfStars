@@ -71,7 +71,7 @@ class Agents{
             //}
         }
         // distribute the stars to the different channels
-        this.setChannelID([true, true, true], false);
+        this.setChannelID([true, true, false], false);
 
         //Shaders
         this.uniforms = {
