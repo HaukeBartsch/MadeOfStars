@@ -39,7 +39,7 @@ async function main() {
         bodyColor: "#747474",
         fireColor: "#ff747b",
         fireColor2: "#7474ff",
-        fireColor3: "#b3e2cd",
+        fireColor3: "#b0b27f",
         bodySize: 0.02,
         bodyOpacity: 0.2,
         fireR1: 0.002,

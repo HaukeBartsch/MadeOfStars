@@ -136,7 +136,7 @@ class World{
         
         // GUI
         const firingFolder = gui.addFolder('Firing')
-        const fire_cycle_controller = firingFolder.add(agents, 'FIRE_CYCLE', 0.1, 50).step(0.1).name("Cycle");
+        const fire_cycle_controller = firingFolder.add(agents, 'FIRE_CYCLE', 0, 60).step(0.1).name("Cycle");
         const bpm_controller = firingFolder.add(agents, 'BPM', 1, 200).step(1).name("BPM").onChange((value) => {
             agents.FIRE_CYCLE = 60.0 / value;
             fire_cycle_controller.updateDisplay();
@@ -204,7 +204,7 @@ class World{
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
             agents.enableChannel2 = value;
         });
-        const channelOnController3 = volumeFolder.add(channelOn, "selectedOption3").name("green").onChange((value) => {
+        const channelOnController3 = volumeFolder.add(channelOn, "selectedOption3").name("yellow").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
             agents.enableChannel3 = value;
         });
