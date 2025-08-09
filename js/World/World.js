@@ -64,8 +64,9 @@ class World{
             100, // far clipping plane
         );
         //camera.position.set(0, 0, 2.2);
-        camera.position.set(0, 0, 2); // see the Resizer for the camera position
-        camera.lookAt(new Vector3(0, 0, 0));
+        // we don't need the zoom as its part of the position (for the perspective camera we are using)
+        camera.position.set(config.posx ?? 0, config.posy ?? 0, config.posz ?? 2); // see the Resizer for the camera position
+        camera.lookAt(new Vector3(config.lookAtx ?? 0, config.lookAty ?? 0, config.lookAtz ?? 0));
         camera.up.set(0, 1, 0); // set the up direction of
 
         // Renderer
@@ -116,6 +117,10 @@ class World{
 
         // Resizer
         const resizer = new Resizer(container, camera, renderer);
+        camera.position.set(config.posx ?? 0, config.posy ?? 0, config.posz ?? 2); // see the Resizer for the camera position
+        // camera.rotation.set(config.rotx ?? )
+        camera.lookAt(new Vector3(config.lookAtx ?? 0, config.lookAty ?? 0, config.lookAtz ?? 0));
+        controls.update();
 
         // Objects
         let agents = new Agents(config);
@@ -206,6 +211,18 @@ class World{
 
         const linkButton = { getLink: function(){  
             var c = agents.getConfig();
+            // add the camera settings as well
+            c.posx = camera.position.x;
+            c.posy = camera.position.y;
+            c.posz = camera.position.z;
+            var lookAtVector = new Vector3(0,0, -1);
+            lookAtVector.applyQuaternion(camera.quaternion); 
+            c.lookAtx = lookAtVector.x;
+            c.lookAty = lookAtVector.y;
+            c.lookAtz = lookAtVector.z;
+            
+            // c.zoom = controls.target.distanceTo(camera.position);
+
             // convert to a URL
             const params = new URLSearchParams(c);
             const queryString = params.toString();

@@ -44,7 +44,13 @@ async function main() {
         bodyOpacity: 0.2,
         fireR1: 0.002,
         fireR2: 0.0001,
-        aspect: 1.0
+        aspect: 1.0,
+        posx: 0,
+        posy: 0,
+        posz: 2,
+        lookAtx: 0,
+        lookAty: 0,
+        lookAtz: 1
     };
     var requiredInteger = [ "channelID1","channelID2","channelID3", "numAgents" ];
 
@@ -75,7 +81,7 @@ async function main() {
     // how many agents should we use?
     if (urlParams.has('stars'))
         config.numAgents = parseInt(urlParams.get('stars')); // this is another numAgents alias
-    
+
     // list of channels
     // CD3 (19), CD20 (27), CD11b (37), CD4 (25) and Catalase (59) (plus Hoechst - 44)
     var channels = ['channel_19.png', 'channel_27.png', 'channel_37.png', 'channel_42.png', 'channel_25.png', 'channel_59.png', 'channel_44.png'];
