@@ -192,7 +192,7 @@ class World{
             agents.setVolume2(volumeImages[value]);
             agents.channelID2 = parseInt(value);
         });
-        volumeFolder.add(channelValue, 'selectedOption3', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (green)").onChange((value) => {
+        volumeFolder.add(channelValue, 'selectedOption3', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (yellow)").onChange((value) => {
             agents.setVolume3(volumeImages[value]);
             agents.channelID3 = parseInt(value);
         });
