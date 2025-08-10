@@ -18,7 +18,7 @@ async function main() {
         channelID3: 4,
         enableChannel1: true,
         enableChannel2: true,
-        enableChannel3: false,
+        enableChannel3: true,
         DESIRED_SPEED: 0.001,
         TAU_SPEED: 0.01,
         FIRE_CYCLE: 3,
@@ -48,9 +48,10 @@ async function main() {
         posx: 0,
         posy: 0,
         posz: 2,
-        lookAtx: 0,
-        lookAty: 0,
-        lookAtz: 1
+        qx: 0,
+        qy: 0,
+        qz: 1,
+        qw: 1
     };
     var requiredInteger = [ "channelID1","channelID2","channelID3", "numAgents" ];
 

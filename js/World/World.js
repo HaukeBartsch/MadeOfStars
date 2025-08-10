@@ -10,6 +10,7 @@ import {
     BoxGeometry,
     MeshBasicMaterial,
     Mesh,
+    Quaternion
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TrackballControls } from 'three/addons/controls/TrackballControls.js'
@@ -66,8 +67,10 @@ class World{
         //camera.position.set(0, 0, 2.2);
         // we don't need the zoom as its part of the position (for the perspective camera we are using)
         camera.position.set(config.posx ?? 0, config.posy ?? 0, config.posz ?? 2); // see the Resizer for the camera position
-        camera.lookAt(new Vector3(config.lookAtx ?? 0, config.lookAty ?? 0, config.lookAtz ?? 0));
+        //camera.lookAt(new Vector3(config.lookAtx ?? 0, config.lookAty ?? 0, config.lookAtz ?? 0));
         camera.up.set(0, 1, 0); // set the up direction of
+        // default quaternion is
+        var default_quaternion = camera.quaternion;
 
         // Renderer
         renderer = new WebGLRenderer({ antialias: true,  alpha: true });
@@ -119,7 +122,10 @@ class World{
         const resizer = new Resizer(container, camera, renderer);
         camera.position.set(config.posx ?? 0, config.posy ?? 0, config.posz ?? 2); // see the Resizer for the camera position
         // camera.rotation.set(config.rotx ?? )
-        camera.lookAt(new Vector3(config.lookAtx ?? 0, config.lookAty ?? 0, config.lookAtz ?? 0));
+        const cameraQuanternion = new Quaternion(config.qx ?? default_quaternion.qx,config.qy ?? default_quaternion.qy,config.qz ?? default_quaternion.qz,config.qw ?? default_quaternion.qw);
+        camera.quaternion.copy(cameraQuanternion);
+
+        //camera.lookAt(new Vector3(config.lookAtx ?? 0, config.lookAty ?? 0, config.lookAtz ?? 0));
         controls.update();
 
         // Objects
@@ -192,9 +198,9 @@ class World{
         });
 
         const channelOn = {
-            selectedOption: true,
-            selectedOption2: true,
-            selectedOption3: false
+            selectedOption: config.enableChannel1 ?? true,
+            selectedOption2: config.enableChannel2 ?? true,
+            selectedOption3: config.enableChannel3 ?? false
         }
         const channelOnController = volumeFolder.add(channelOn, "selectedOption").name("red").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
@@ -215,12 +221,11 @@ class World{
             c.posx = camera.position.x;
             c.posy = camera.position.y;
             c.posz = camera.position.z;
-            var lookAtVector = new Vector3(0,0, -1);
-            lookAtVector.applyQuaternion(camera.quaternion); 
-            c.lookAtx = lookAtVector.x;
-            c.lookAty = lookAtVector.y;
-            c.lookAtz = lookAtVector.z;
-            
+            c.qx = camera.quaternion.x;
+            c.qy = camera.quaternion.y;
+            c.qz = camera.quaternion.z;
+            c.qw = camera.quaternion.w;
+                        
             // c.zoom = controls.target.distanceTo(camera.position);
 
             // convert to a URL
