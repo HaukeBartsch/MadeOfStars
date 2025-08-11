@@ -213,7 +213,6 @@ class Agents{
             frcVec.addScaledVector(this.boidAlgorithm(ID, this.posArray, this.VISIBLE_RADIUS,  neighborsPerID),   this.COHERE_FACTOR);
             frcVec.addScaledVector(this.boidAlgorithm(ID, this.posArray, this.PROTECTED_RADIUS,neighborsPerID),  -this.AVOID_FACTOR);
             frcVec.addScaledVector(this.flee(ID), -this.FLEE_FACTOR); // Flee from Hunter
-            //frcVec.addScaledVector(this.constrainToSphere(ID, this.HABITAT_RADIUS), this.HABITAT_FACTOR);
             frcVec.addScaledVector(this.restoreVelocity(ID), delta/this.TAU_SPEED); // Exponentially restore velocity
             frcVec.toArray(this.frcArray, ID*3); // Write down computed force
         }
@@ -307,14 +306,6 @@ class Agents{
             quickVec1.fromArray(this.posArray, ID * 3); // agent's position
             quickVec1.addScaledVector(this.hunterPos, -1); // direction away from the hunter
             quickVec1.negate(); // negating for consistency with avoiding behavior
-        }
-        return quickVec1;
-    }
-    constrainToSphere(ID, radius = 1){
-        quickVec1.set(0, 0, 0); // Constraining force
-        quickVec2.fromArray(this.posArray, ID*3); //agent's position
-        if (quickVec2.lengthSq() > radius*radius){
-            return quickVec2.negate();
         }
         return quickVec1;
     }
