@@ -485,7 +485,7 @@ class World{
             selectedOption: config.channelID1, // default channel is "Hoechst"
             selectedOption2: config.channelID2, // default channel is "Catalase"
             selectedOption3: config.channelID3, // default channel is "CD4"
-            selectedColormap: null
+            selectedColormap: null // we will store only the individual colors, not the colormap
         }
         volumeFolder.add(channelValue, 'selectedOption', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (red)").onChange((value) => {
             agents.setVolume(volumeImages[value]);
