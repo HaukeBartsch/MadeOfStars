@@ -242,7 +242,7 @@ class Agents{
             for (let [ID2, distSq] of neighborsPerID[ID]) {
                 this.nudgedArray[ID2] += 1;
             }
-            }
+        }
     }
     nudge(ID){
         let amplitude = Math.min(this.nudgedArray[ID],  this.NUDGE_LIMIT)*this.NUDGE_FACTOR;
