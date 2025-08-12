@@ -17,6 +17,8 @@ let velVec = new Vector3;
 let frcVec = new Vector3;
 let quickVec1 = new Vector3;
 let quickVec2 = new Vector3;
+let captureCoordinates = false;
+let capturedCoordinates = []; // delta, x, y, z
 
 class Agents{
     constructor(config) {
@@ -230,6 +232,13 @@ class Agents{
             velVec.toArray(this.velArray, ID*3);
             posVec.toArray(this.posArray, ID*3);
         }
+
+        if (captureCoordinates) {
+            for (let ID = 0; ID < this.count; ID++) {
+                capturedCoordinates.push([delta, this.posArray[(3*ID)+0], this.posArray[(3*ID)+1], this.posArray[(3*ID)+2]]);
+            }
+        }
+
         //console.log(this.nudgedArray.reduce((xs, x) => xs+x)/this.nudgedArray.length);
         // Update mesh
         this.mesh.geometry.attributes.position.needsUpdate = true;

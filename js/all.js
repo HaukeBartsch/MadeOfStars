@@ -5,7 +5,7 @@ import { Volume } from './World/Volume.js';
 import {World} from "./World/World.js";
 
 // volume image
-
+var numLoaded = 0;
 
 async function main() {
     console.log("Document is ready. Initializing scene...");
@@ -97,6 +97,12 @@ async function main() {
         promises.push(new Promise((resolve) => {
             volumes[volumes.length -1].addEventListener('loaded', (event) => {
                 console.log("gradient loaded for " + channel + ". Found " + event.detail.slices + " slices.");
+                numLoaded++;
+                var nl = document.getElementById("num-loaded");
+                if (nl) {
+                    nl.textContent = numLoaded;
+                }
+
                 resolve();
             });
         }));
