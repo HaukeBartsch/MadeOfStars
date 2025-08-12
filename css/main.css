@@ -149,7 +149,7 @@ mark {
 }
 
 #messages.start_fade_out {
-  animation: fadeOut 2s ease-out; /* Animate opacity over 0.5 seconds */
+  animation: fadeOut 2s ease-out, visibility 0s linear 2.5s; /* Animate opacity over 0.5 seconds */
   animation-fill-mode: forwards;
 }
 
@@ -159,6 +159,7 @@ mark {
     }
     100% {
         opacity: 0; /* End completely transparent */
+        display: none;
     }
 }
 
