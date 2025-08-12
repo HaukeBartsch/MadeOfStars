@@ -32,6 +32,8 @@ import { Hunter } from './Hunter.js';
 let scene, camera, renderer;
 let composer;
 
+// colorbrewer2 colors from https://gist.github.com/mbostock/5577023
+// we are only using the "3" entries, no problem using more...
 const colors = {"YlGn": {
 "3": ["#f7fcb9","#addd8e","#31a354"],
 "4": ["#ffffcc","#c2e699","#78c679","#238443"],
@@ -457,7 +459,7 @@ class World{
         });
         firingFolder.add(agents, 'NUDGE_FACTOR', 0, 0.03).step(0.003).name("Nudging");
         firingFolder.add(agents.uniforms.fireR2, 'value', 0, 0.006).step(0.0001).name("Body fire");
-        firingFolder.add(agents.uniforms.fireR1, 'value', 0, 0.06).step(0.001).name("Diffused fire");
+        firingFolder.add(agents.uniforms.fireR1, 'value', 0, 0.06).step(0.0001).name("Diffused fire");
         const desyncButton = { desync:function(){  agents.desyncronize(); }};
         firingFolder.add(desyncButton,'desync').name("Desyncronize");
         const flockingFolder = gui.addFolder('Flocking')
