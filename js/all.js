@@ -102,19 +102,22 @@ async function main() {
                 if (nl) {
                     nl.textContent = numLoaded;
                 }
-
                 resolve();
             });
         }));
     });
     
     await Promise.all(promises).then(() => {
-        const msg = document.getElementById('messages');
-        msg.style.display = 'none'; // hide the messages
         //jQuery('#messages').hide(); // hide the messages
         const sceneContainer = document.getElementById('scene-container');
         const world = new World(sceneContainer, volumes, config);
         world.start();
+        // start fading out the messages
+        const msg = document.getElementById('messages');
+        // msg.style.display = 'none'; // hide the messages
+        setTimeout(function() { 
+            msg.classList.add('start_fade_out');
+        }, 1000);
     });
     
     /*  
