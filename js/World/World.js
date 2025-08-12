@@ -447,7 +447,7 @@ class World{
         // GUI
         const firingFolder = gui.addFolder('Firing')
         const fire_cycle_controller = firingFolder.add(agents, 'FIRE_CYCLE', 0, 60).step(0.1).name("Cycle");
-        const bpm_controller = firingFolder.add(agents, 'BPM', 1, 200).step(1).name("BPM").onChange((value) => {
+        const bpm_controller = firingFolder.add(agents, 'BPM', 1, 1000).step(1).name("BPM").onChange((value) => {
             agents.FIRE_CYCLE = 60.0 / value;
             fire_cycle_controller.updateDisplay();
             // value = 60 / FIRE_CYCLE
