@@ -359,7 +359,7 @@ class World{
         // Scene
         scene = new Scene();
         const loader = new TextureLoader();
-        let backgroundTexture = loader.load('js/assets/background_darker.svg');
+        let backgroundTexture = loader.load('js/assets/background_dark.svg');
         scene.background = backgroundTexture;
         // Camera
         camera = new PerspectiveCamera(
