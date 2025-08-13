@@ -44,5 +44,6 @@ Convert the channel_XX.png to a gradient_XX.bin.gz using the ./converter/toGradi
 
 ```bin
 # cd converter; npm install
-node ./toGradientFile.js ../channel_44.png ../gradient_44.bin.gz
+node ./toGradientFile.js ../channel_44.png ../gradient_44.bin
+gzip ../gradient_44.bin
 ```
