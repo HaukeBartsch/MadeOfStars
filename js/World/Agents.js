@@ -233,6 +233,8 @@ class Agents{
             posVec.toArray(this.posArray, ID*3);
         }
 
+        // Used to manually generate a cache of positions over time.
+        // txt = ""; capturedCoordinates.map(function(a) { txt += a[1] + "," + a[2] + "," + a[3] + "\n"; });
         if (captureCoordinates) {
             for (let ID = 0; ID < this.count; ID++) {
                 capturedCoordinates.push([delta, this.posArray[(3*ID)+0], this.posArray[(3*ID)+1], this.posArray[(3*ID)+2]]);
