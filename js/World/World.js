@@ -572,7 +572,7 @@ class World{
             
             let url = new URL(window.location.href);
             url.search = ''; // remove the query string
-            copyStringToClipboard(url.toString() + "/?" + queryString);
+            copyStringToClipboard(url.toString() + "?" + queryString);
         }};
         volumeFolder.add(linkButton,'getLink').name("Copy bookmark");
         
