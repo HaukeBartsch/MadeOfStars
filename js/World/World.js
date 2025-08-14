@@ -466,7 +466,18 @@ class World{
         this.audioPlayer = new AudioPlayer(agents);
         this.audioPlayer.start();
 
-        const audioFolder = gui.addFolder('Audio')
+        const audioFolder = gui.addFolder('Audio');
+        const toggleSoundButton = { toggle_sound: (function(audioPlayer) {
+            return function() {
+                if (audioPlayer.isPlaying)
+                    audioPlayer.stop();
+                else
+                    audioPlayer.start();
+            };
+        })(this.audioPlayer) };
+        audioFolder.add(toggleSoundButton,'toggle_sound').name("Toggle Sound");
+
+
         const flockingFolder = gui.addFolder('Flocking')
         flockingFolder.add(agents, 'DESIRED_SPEED', 0, 0.4).step(0.001).name("Speed");
         flockingFolder.add(agents, 'COHERE_FACTOR', 0, 10).step(0.1).name("Coherence");
@@ -559,7 +570,9 @@ class World{
             const params = new URLSearchParams(c);
             const queryString = params.toString();
             
-            copyStringToClipboard(window.location.href + "/?" + queryString);
+            let url = new URL(window.location.href);
+            url.search = ''; // remove the query string
+            copyStringToClipboard(url.toString() + "/?" + queryString);
         }};
         volumeFolder.add(linkButton,'getLink').name("Copy bookmark");
         
