@@ -375,6 +375,7 @@ class World{
         camera.up.set(0, 1, 0); // set the up direction of
         // default quaternion is
         var default_quaternion = camera.quaternion;
+        var default_up = camera.up;
         
         // Renderer
         renderer = new WebGLRenderer({ antialias: true,  alpha: true });
@@ -425,8 +426,18 @@ class World{
         const resizer = new Resizer(container, camera, renderer);
         camera.position.set(config.posx ?? 0, config.posy ?? 0, config.posz ?? 2); // see the Resizer for the camera position
         // camera.rotation.set(config.rotx ?? )
-        const cameraQuanternion = new Quaternion(config.qx ?? default_quaternion.qx,config.qy ?? default_quaternion.qy,config.qz ?? default_quaternion.qz,config.qw ?? default_quaternion.qw);
+        const cameraQuanternion = new Quaternion(
+            config.qx ?? default_quaternion.qx,
+            config.qy ?? default_quaternion.qy,
+            config.qz ?? default_quaternion.qz,
+            config.qw ?? default_quaternion.qw);
         camera.quaternion.copy(cameraQuanternion);
+        const up_vector = new Vector3(
+            config.upx ?? default_up.x,
+            config.upy ?? default_up.y,
+            config.upz ?? default_up.z
+        );
+        camera.up.copy(up_vector);
         
         //camera.lookAt(new Vector3(config.lookAtx ?? 0, config.lookAty ?? 0, config.lookAtz ?? 0));
         controls.update();
@@ -563,6 +574,9 @@ class World{
             c.qy = camera.quaternion.y;
             c.qz = camera.quaternion.z;
             c.qw = camera.quaternion.w;
+            c.upx = camera.up.x;
+            c.upy = camera.up.y;
+            c.upz = camera.up.z;
             
             // c.zoom = controls.target.distanceTo(camera.position);
             
