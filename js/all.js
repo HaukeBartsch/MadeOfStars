@@ -5,7 +5,7 @@ import { Volume } from './World/Volume.js';
 import {World} from "./World/World.js";
 
 // volume image
-
+var numLoaded = 0;
 
 async function main() {
     console.log("Document is ready. Initializing scene...");
@@ -39,7 +39,7 @@ async function main() {
         bodyColor: "#747474",
         fireColor: "#ff747b",
         fireColor2: "#7474ff",
-        fireColor3: "#b0b27f",
+        fireColor3: "#c450d5", // #c450d5, #b0b27f
         bodySize: 0.02,
         bodyOpacity: 0.2,
         fireR1: 0.002,
@@ -97,18 +97,27 @@ async function main() {
         promises.push(new Promise((resolve) => {
             volumes[volumes.length -1].addEventListener('loaded', (event) => {
                 console.log("gradient loaded for " + channel + ". Found " + event.detail.slices + " slices.");
+                numLoaded++;
+                var nl = document.getElementById("num-loaded");
+                if (nl) {
+                    nl.textContent = numLoaded;
+                }
                 resolve();
             });
         }));
     });
     
     await Promise.all(promises).then(() => {
-        const msg = document.getElementById('messages');
-        msg.style.display = 'none'; // hide the messages
         //jQuery('#messages').hide(); // hide the messages
         const sceneContainer = document.getElementById('scene-container');
         const world = new World(sceneContainer, volumes, config);
         world.start();
+        // start fading out the messages
+        const msg = document.getElementById('messages');
+        // msg.style.display = 'none'; // hide the messages
+        setTimeout(function() { 
+            msg.classList.add('start_fade_out');
+        }, 1000);
     });
     
     /*  

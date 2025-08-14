@@ -26,6 +26,7 @@ body {
     height: 100%;
     left: auto; 
     right: 0;
+    z-index: -1;
 }
 
 #text{
@@ -143,6 +144,23 @@ mark {
     background: #000;
     font-family: 'Arial', sans-serif;
     overflow: hidden;
+    z-index: 0;
+    opacity: 1; /* Initial state: fully opaque */
+}
+
+#messages.start_fade_out {
+  animation: fadeOut 2s ease-out, visibility 0s linear 2.5s; /* Animate opacity over 0.5 seconds */
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1; /* Start fully opaque */
+    }
+    100% {
+        opacity: 0; /* End completely transparent */
+        display: none;
+    }
 }
 
 div.neon-text p {

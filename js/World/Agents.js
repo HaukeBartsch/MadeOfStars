@@ -17,6 +17,8 @@ let velVec = new Vector3;
 let frcVec = new Vector3;
 let quickVec1 = new Vector3;
 let quickVec2 = new Vector3;
+let captureCoordinates = false;
+let capturedCoordinates = []; // delta, x, y, z
 
 class Agents{
     constructor(config) {
@@ -229,6 +231,15 @@ class Agents{
             velVec.toArray(this.velArray, ID*3);
             posVec.toArray(this.posArray, ID*3);
         }
+
+        // Used to manually generate a cache of positions over time.
+        // txt = ""; capturedCoordinates.map(function(a) { txt += a[1] + "," + a[2] + "," + a[3] + "\n"; });
+        if (captureCoordinates) {
+            for (let ID = 0; ID < this.count; ID++) {
+                capturedCoordinates.push([delta, this.posArray[(3*ID)+0], this.posArray[(3*ID)+1], this.posArray[(3*ID)+2]]);
+            }
+        }
+
         //console.log(this.nudgedArray.reduce((xs, x) => xs+x)/this.nudgedArray.length);
         // Update mesh
         this.mesh.geometry.attributes.position.needsUpdate = true;
@@ -241,7 +252,7 @@ class Agents{
             for (let [ID2, distSq] of neighborsPerID[ID]) {
                 this.nudgedArray[ID2] += 1;
             }
-            }
+        }
     }
     nudge(ID){
         let amplitude = Math.min(this.nudgedArray[ID],  this.NUDGE_LIMIT)*this.NUDGE_FACTOR;
