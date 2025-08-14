@@ -12,6 +12,8 @@ import {
     Mesh,
     Quaternion
 } from 'three';
+import Magnify3d from 'https://esm.sh/magnify-3d';
+
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TrackballControls } from 'three/addons/controls/TrackballControls.js'
 import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
@@ -21,11 +23,11 @@ import { Resizer } from "./Resizer.js";
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-
 import * as dat from 'dat.gui'
 const gui = new dat.GUI();
 gui.domElement.id = "gui";
 
+import { AudioPlayer } from './AudioPlayer.js';
 import { Agents } from './Agents.js';
 import { Hunter } from './Hunter.js';
 
@@ -353,8 +355,6 @@ class World{
     constructor(container, volumeImages, config) {
         
         //var numberOfAgents = config.numAgents || 700;
-        
-        
         updatables = [];
         // Scene
         scene = new Scene();
@@ -378,7 +378,6 @@ class World{
         
         // Renderer
         renderer = new WebGLRenderer({ antialias: true,  alpha: true });
-        
         container.append(renderer.domElement);
         
         // Orbit Controls
@@ -457,11 +456,17 @@ class World{
             agents.BPM = 60 / value;
             bpm_controller.updateDisplay();
         });
+
         firingFolder.add(agents, 'NUDGE_FACTOR', 0, 0.03).step(0.003).name("Nudging");
         firingFolder.add(agents.uniforms.fireR2, 'value', 0, 0.006).step(0.0001).name("Body fire");
         firingFolder.add(agents.uniforms.fireR1, 'value', 0, 0.06).step(0.0001).name("Diffused fire");
         const desyncButton = { desync:function(){  agents.desyncronize(); }};
         firingFolder.add(desyncButton,'desync').name("Desyncronize");
+        
+        this.audioPlayer = new AudioPlayer(agents);
+        this.audioPlayer.start();
+
+        const audioFolder = gui.addFolder('Audio')
         const flockingFolder = gui.addFolder('Flocking')
         flockingFolder.add(agents, 'DESIRED_SPEED', 0, 0.4).step(0.001).name("Speed");
         flockingFolder.add(agents, 'COHERE_FACTOR', 0, 10).step(0.1).name("Coherence");
@@ -593,5 +598,4 @@ class World{
         }
     }
 }
-
 export {World}
