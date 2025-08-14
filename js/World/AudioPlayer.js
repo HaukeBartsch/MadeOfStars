@@ -38,9 +38,11 @@ class AudioPlayer {
     playNote() {
         const posArray = this.agents.posArray;
         const velArray = this.agents.velArray;
+        const clockArray = this.agents.clockArray;
+        const grid = this.agents.grid;
         const bpm = this.agents.BPM;
 
-        const spectrum = this.generateSpectrum(posArray, velArray);
+        const spectrum = this.generateSpectrum(posArray, velArray, clockArray, grid);
         this.resumeAudioContext();
         this.playSpectrum(spectrum, bpm);
     }
@@ -94,9 +96,11 @@ class AudioPlayer {
         });
     }
 
-    generateSpectrum(positions, velocities, numBands = 64) {
+    generateSpectrum(positions, velocities, clockArray, grid, numBands = 64) {
         let spectrum = new Array(numBands).fill(0);
         let count = positions.length / 3;
+
+        let neighborsPerID = grid.getDistancesSq(positions, /* VISIBLE_RADIUS */ 0.15, this.USE_GRID);
 
         for (let i = 0; i < count; i++) {
             let x = positions[i * 3];
@@ -107,10 +111,12 @@ class AudioPlayer {
             let vy = velocities[i * 3 + 1];
             let vz = velocities[i * 3 + 2];
 
-            let posMag = Math.sqrt(x * x + y * y + z * z);
+            let ns = [...neighborsPerID[i].keys()].length;
+
+            let posMag = Math.sqrt(x * x + y * y + z * z );
             let velMag = Math.sqrt(vx * vx + vy * vy + vz * vz);
 
-            let energy = posMag * velMag;
+            let energy = posMag * velMag + (0.001 * ns);
 
             let band = Math.floor((energy % 1) * numBands);
 
