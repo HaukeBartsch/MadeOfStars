@@ -36,15 +36,10 @@ class AudioPlayer {
 
 
     playNote() {
-        const posArray = this.agents.posArray;
-        const velArray = this.agents.velArray;
-        const clockArray = this.agents.clockArray;
-        const grid = this.agents.grid;
-        const bpm = this.agents.BPM;
 
-        const spectrum = this.generateSpectrum(posArray, velArray, clockArray, grid);
+        const spectrum = this.generateSpectrum(this.agents);
         this.resumeAudioContext();
-        this.playSpectrum(spectrum, bpm);
+        this.playSpectrum(spectrum, this.agents.BPM);
     }
 
     resumeAudioContext() {
@@ -96,7 +91,16 @@ class AudioPlayer {
         });
     }
 
-    generateSpectrum(positions, velocities, clockArray, grid, numBands = 64) {
+    generateSpectrum(agents, numBands = 64) {
+        const positions = agents.posArray;
+        const velocities = agents.velArray;
+        // The clock array codes the relative phase of all particles relative to the cycle - when they light up.
+        const clockArray = agents.clockArray;
+        // The grid encodes for each voxel how many neighbors there are in a given maximum distance. This
+        // can be used to estimate how many clusters are present in the data. This should change with each channel.
+        const grid = agents.grid;
+        const bpm = agents.BPM;
+
         let spectrum = new Array(numBands).fill(0);
         let count = positions.length / 3;
 
