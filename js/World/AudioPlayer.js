@@ -37,9 +37,13 @@ class AudioPlayer {
 
     playNote() {
 
-        const spectrum = this.generateSpectrum(this.agents);
+        const spectrum1 = this.generateSpectrum(this.agents, 0);
+        const spectrum2 = this.generateSpectrum(this.agents, 1);
+        const spectrum3 = this.generateSpectrum(this.agents, 2);
         this.resumeAudioContext();
-        this.playSpectrum(spectrum, this.agents.BPM);
+        this.playSpectrum(spectrum1, this.agents.BPM, this.agents.FIRE_CYCLE/3 * 0);
+        this.playSpectrum(spectrum2, this.agents.BPM, this.agents.FIRE_CYCLE/3 * 1);
+        this.playSpectrum(spectrum3, this.agents.BPM, this.agents.FIRE_CYCLE/3 * 2);
     }
 
     resumeAudioContext() {
@@ -57,11 +61,11 @@ class AudioPlayer {
         return rootFreq * Math.pow(2, semitones / 12);
     }
 
-    playSpectrum(spectrum, bpm) {
+    playSpectrum(spectrum, bpm, delay) {
         let now = this.audioCtx.currentTime;
 
         spectrum.forEach((amplitude, i) => {
-            let adjustedNow = now + i * 0.01
+            let adjustedNow = now + i * 0.01 + delay;
             if (amplitude < 0.01) return;
             let filter = this.audioCtx.createBiquadFilter();
             filter.type = 'lowpass';
@@ -91,7 +95,8 @@ class AudioPlayer {
         });
     }
 
-    generateSpectrum(agents, numBands = 64) {
+    // channel = -1 is all channel
+    generateSpectrum(agents, channel = -1, numBands = 64) {
         const positions = agents.posArray;
         const velocities = agents.velArray;
         // The clock array codes the relative phase of all particles relative to the cycle - when they light up.
@@ -100,6 +105,8 @@ class AudioPlayer {
         // can be used to estimate how many clusters are present in the data. This should change with each channel.
         const grid = agents.grid;
         const bpm = agents.BPM;
+        // the channel each point has been assigned to. (note a channel can be switch off, no point will be assigned to such a channel)
+        const channelArray = agents.channelArray;
 
         let spectrum = new Array(numBands).fill(0);
         let count = positions.length / 3;
@@ -107,6 +114,9 @@ class AudioPlayer {
         let neighborsPerID = grid.getDistancesSq(positions, /* VISIBLE_RADIUS */ 0.15, this.USE_GRID);
 
         for (let i = 0; i < count; i++) {
+            if (channel != -1 && channelArray[i] != channel)
+                continue; 
+
             let x = positions[i * 3];
             let y = positions[i * 3 + 1];
             let z = positions[i * 3 + 2];
