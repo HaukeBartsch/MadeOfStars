@@ -37,13 +37,17 @@ class AudioPlayer {
 
     playNote() {
 
-        const spectrum1 = this.generateSpectrum(this.agents, 0);
-        const spectrum2 = this.generateSpectrum(this.agents, 1);
-        const spectrum3 = this.generateSpectrum(this.agents, 2);
+        var spectrums = []; // on per channel enabled
+        if (this.agents.enableChannel1)
+            spectrums.push(this.generateSpectrum(this.agents, 0));
+        if (this.agents.enableChannel2)
+            spectrums.push(this.generateSpectrum(this.agents, 1));
+        if (this.agents.enableChannel3)
+            spectrums.push(this.generateSpectrum(this.agents, 2));
         this.resumeAudioContext();
-        this.playSpectrum(spectrum1, this.agents.BPM, this.agents.FIRE_CYCLE/3 * 0);
-        this.playSpectrum(spectrum2, this.agents.BPM, this.agents.FIRE_CYCLE/3 * 1);
-        this.playSpectrum(spectrum3, this.agents.BPM, this.agents.FIRE_CYCLE/3 * 2);
+        // offset the three sounds
+        for (var i = 0; i < spectrums.length; i++)
+            this.playSpectrum(spectrums[i], this.agents.BPM, this.agents.FIRE_CYCLE/spectrums.length * i);
     }
 
     resumeAudioContext() {
