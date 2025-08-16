@@ -131,10 +131,15 @@ class AudioPlayer {
 
             let ns = [...neighborsPerID[i].keys()].length;
 
+            let cs = clockArray[i] / (60 / bpm); // now from 0 to 1
+
             let posMag = Math.sqrt(x * x + y * y + z * z );
             let velMag = Math.sqrt(vx * vx + vy * vy + vz * vz);
 
-            let energy = posMag * velMag + (0.001 * ns);
+            // one component based on distance and speed
+            // one component based on average clustering (per channel)
+            // one component based on synchronized firing
+            let energy = ((posMag * velMag) + (0.001 * ns) + (cs)) / 3.0;
 
             let band = Math.floor((energy % 1) * numBands);
 
