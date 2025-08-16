@@ -161,10 +161,10 @@ class Agents{
             fireColor: this.fireColor,
             fireColor2: this.fireColor2,
             fireColor3: this.fireColor3,
-            bodySize: this.bodySize,
-            bodyOpacity: this.bodyOpacity,
-            fireR1: this.fireR1,
-            fireR2: this.fireR2,
+            bodySize: this.uniforms.bodySize,
+            bodyOpacity: this.uniforms.bodyOpacity,
+            fireR1: this.uniforms.fireR1,
+            fireR2: this.uniforms.fireR2,
             aspect: this.aspect
         };
     }

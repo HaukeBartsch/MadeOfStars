@@ -82,7 +82,8 @@ class AudioPlayer {
             osc.frequency.value = freq;
             osc.type = 'sine'
 
-            let noteDuration = 60 / bpm;
+            let noteDuration = 60 / bpm; // would need to get shorter if we play more notes
+            noteDuration /= 3.0;
             let releaseTime = 0.05;
 
             let baseAmp = amplitude * 0.05;
@@ -100,6 +101,8 @@ class AudioPlayer {
     }
 
     // channel = -1 is all channel
+    // we can generate many spectra at once (by component and by channel) can those playback in time?
+    // each tone would have to be shorter
     generateSpectrum(agents, channel = -1, numBands = 64) {
         const positions = agents.posArray;
         const velocities = agents.velArray;
@@ -129,9 +132,9 @@ class AudioPlayer {
             let vy = velocities[i * 3 + 1];
             let vz = velocities[i * 3 + 2];
 
-            let ns = [...neighborsPerID[i].keys()].length;
+            let ns = ([...neighborsPerID[i].keys()].length / count) % 1;
 
-            let cs = clockArray[i] / (60 / bpm); // now from 0 to 1
+            let cs = (clockArray[i] / (60 / bpm)) % 1; // now from 0 to 1
 
             let posMag = Math.sqrt(x * x + y * y + z * z );
             let velMag = Math.sqrt(vx * vx + vy * vy + vz * vz);
@@ -139,11 +142,18 @@ class AudioPlayer {
             // one component based on distance and speed
             // one component based on average clustering (per channel)
             // one component based on synchronized firing
-            let energy = ((posMag * velMag) + (0.001 * ns) + (cs)) / 3.0;
+            // let energy = ((posMag * velMag) + (ns) + (cs)) / 3.0;
+            let energy01 = (posMag * velMag);
+            let energy02 = (ns);
+            let energy03 = (cs);
 
-            let band = Math.floor((energy % 1) * numBands);
+            let band01 = Math.floor((energy01 % 1) * numBands);
+            let band02 = Math.floor((energy02 % 1) * numBands);
+            let band03 = Math.floor((energy03 % 1) * numBands);
 
-            spectrum[band] += energy;
+            spectrum[band01] += energy01;
+            spectrum[band02] += energy02;
+            spectrum[band03] += energy03;
         }
 
         let max = Math.max(...spectrum);
