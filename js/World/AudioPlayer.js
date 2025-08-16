@@ -83,7 +83,7 @@ class AudioPlayer {
             osc.type = 'sine'
 
             let noteDuration = 60 / bpm; // would need to get shorter if we play more notes
-            noteDuration /= 3.0;
+            //noteDuration /= 3.0;
             let releaseTime = 0.05;
 
             let baseAmp = amplitude * 0.05;
