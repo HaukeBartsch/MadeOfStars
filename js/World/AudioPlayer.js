@@ -43,18 +43,25 @@ class AudioPlayer {
 
     playNote() {
         var spectrums = []; // on per channel enabled
-        if (this.agents.enableChannel1)
-            spectrums.push(this.generateSpectrum(this.agents, 0, 64, 'position'));
-            spectrums.push(this.generateSpectrum(this.agents, 0, 64, 'velocity'));
-            spectrums.push(this.generateSpectrum(this.agents, 0, 64, 'neighborhood'));
-        if (this.agents.enableChannel2)
-            spectrums.push(this.generateSpectrum(this.agents, 1, 64, 'position'));
-            spectrums.push(this.generateSpectrum(this.agents, 1, 64, 'velocity'));
-            spectrums.push(this.generateSpectrum(this.agents, 1, 64, 'neighborhood'));
-        if (this.agents.enableChannel3)
-            spectrums.push(this.generateSpectrum(this.agents, 2, 64, 'position'));
-            spectrums.push(this.generateSpectrum(this.agents, 2, 64, 'velocity'));
-            spectrums.push(this.generateSpectrum(this.agents, 2, 64, 'neighborhood'));
+        var which_spectra = [ 'position', 'velocity', 'neighborhood' ]; // optimization, each generateSpectrum is expensive due to neighborhood computations
+        if (this.agents.enableChannel1) {
+            spectrums.push(... this.generateSpectrum(this.agents, 0, 64, which_spectra));
+            //spectrums.push(this.generateSpectrum(this.agents, 0, 64, 'position'));
+            //spectrums.push(this.generateSpectrum(this.agents, 0, 64, 'velocity'));
+            //spectrums.push(this.generateSpectrum(this.agents, 0, 64, 'neighborhood'));
+        }
+        if (this.agents.enableChannel2) {
+            spectrums.push(... this.generateSpectrum(this.agents, 1, 64, which_spectra));
+            //spectrums.push(this.generateSpectrum(this.agents, 1, 64, 'position'));
+            //spectrums.push(this.generateSpectrum(this.agents, 1, 64, 'velocity'));
+            //spectrums.push(this.generateSpectrum(this.agents, 1, 64, 'neighborhood'));
+        }
+        if (this.agents.enableChannel3) {
+            spectrums.push(... this.generateSpectrum(this.agents, 2, 64, which_spectra));
+            //spectrums.push(this.generateSpectrum(this.agents, 2, 64, 'position'));
+            //spectrums.push(this.generateSpectrum(this.agents, 2, 64, 'velocity'));
+            //spectrums.push(this.generateSpectrum(this.agents, 2, 64, 'neighborhood'));
+        }
         this.resumeAudioContext();
         // offset the three sounds
         for (var i = 0; i < spectrums.length; i++)
@@ -117,10 +124,18 @@ class AudioPlayer {
         });
     }
 
-    // channel = -1 is all channel
-    // we can generate many spectra at once (by component and by channel) can those playback in time?
-    // each tone would have to be shorter
+    // channel = -1 is all microscopy channel
     generateSpectrum(agents, channel = -1, numBands = 64, energy_source='position') {
+        // if we get a whole list of energy_sources, create an array of spectra as return argument
+        let spectrum = null;
+        if (Array.isArray(energy_source)) {
+            spectrum = [];
+            for (var i = 0; i < energy_source.length; i++)
+                spectrum.push(new Array(numBands).fill(0)); // one spectrum per energy_source (in order)
+        } else {
+            spectrum = new Array(numBands).fill(0);
+        }
+
         // energy source can be position, velocity, or magnitude
         const positions = agents.posArray;
         const velocities = agents.velArray;
@@ -133,13 +148,15 @@ class AudioPlayer {
         // the channel each point has been assigned to. (note a channel can be switch off, no point will be assigned to such a channel)
         const channelArray = agents.channelArray;
 
-        let spectrum = new Array(numBands).fill(0);
         let count = positions.length / 3;
 
+        // this is the most expensive operation, better to do it only once and select energy_source afterwards
+        // TODO: we can use the distances from the last time their have been computed in Grid, add a cache would
+        //       remove the computational cost here
         let neighborsPerID = grid.getDistancesSq(positions, /* VISIBLE_RADIUS */ 0.15, this.USE_GRID);
 
         for (let i = 0; i < count; i++) {
-            if (channel != -1 && channelArray[i] != channel)
+            if (channel != -1 && channelArray[i] != channel) // only use IDs that belong to our channel
                 continue;
 
             let x = positions[i * 3];
@@ -170,15 +187,43 @@ class AudioPlayer {
             //let band03 = Math.floor((energy03 % 1) * numBands);
             let band04 = Math.floor((energy04 % 1) * numBands);
 
-            if (energy_source == 'position')
-                spectrum[band01] += energy01;
-            if (energy_source == 'velocity')
-                spectrum[band02] += energy02;
-            //spectrum[band03] += energy03;
-            if (energy_source == 'neighborhood')
-                spectrum[band04] += energy04;
+            if (Array.isArray(energy_source)) {
+                var idx = energy_source.indexOf('position');
+                if (idx != -1) {
+                    spectrum[idx][band01] += energy01;    
+                }
+                var idx = energy_source.indexOf('velocity');
+                if (idx != -1) {
+                    spectrum[idx][band02] += energy02;    
+                }
+                var idx = energy_source.indexOf('neighborhood');
+                if (idx != -1) {
+                    spectrum[idx][band04] += energy04;    
+                }
+            } else {
+                if (energy_source == 'position')
+                    spectrum[band01] += energy01;
+                if (energy_source == 'velocity')
+                    spectrum[band02] += energy02;
+                //spectrum[band03] += energy03;
+                if (energy_source == 'neighborhood')
+                    spectrum[band04] += energy04;
+            }
         }
-
+        // if we compute more than one spectrum at a time
+        if (Array.isArray(energy_source)) {
+            for (var j = 0; j < energy_source.length; j++) {
+                const noteDurationFactor = DURATION_FACTORS[energy_source[j]];
+                let max = Math.max(...spectrum[j]);
+                if (max === 0) {
+                    spectrum[j] = [spectrum[j], noteDurationFactor]
+                } else {              
+                    spectrum[j] = [spectrum[j].map(val => val / max), noteDurationFactor];
+                }                
+            }
+            return spectrum; // list of element [spectrum, noteDurationFactor]
+        }
+        // in case we only have a single spectrum to compute
         let max = Math.max(...spectrum);
         if (max === 0) return spectrum;
         

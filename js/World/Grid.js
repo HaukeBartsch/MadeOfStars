@@ -51,6 +51,7 @@ class UnitGrid {
             filledCells.add(idx);
         }
     }
+    // expensive operation, can we cache this just in case we can use approximate values?
     getDistancesSq(posArray, threshold, useGrid = true){
         if (useGrid){
             return this.gridSearch(posArray, threshold);
