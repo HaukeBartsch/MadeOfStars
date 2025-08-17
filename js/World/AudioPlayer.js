@@ -153,7 +153,11 @@ class AudioPlayer {
         // this is the most expensive operation, better to do it only once and select energy_source afterwards
         // TODO: we can use the distances from the last time their have been computed in Grid, add a cache would
         //       remove the computational cost here
-        let neighborsPerID = grid.getDistancesSq(positions, /* VISIBLE_RADIUS */ 0.15, this.USE_GRID);
+        let neighborsPerID = null;
+        if (agents.neighborsPerID_cache != null)
+            neighborsPerID = agents.neighborsPerID_cache;
+        else 
+            neighborsPerID = grid.getDistancesSq(positions, /* VISIBLE_RADIUS */ 0.15, this.USE_GRID);
 
         for (let i = 0; i < count; i++) {
             if (channel != -1 && channelArray[i] != channel) // only use IDs that belong to our channel
