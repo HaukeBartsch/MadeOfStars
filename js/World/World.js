@@ -512,7 +512,25 @@ class World{
             };
         })(this.audioPlayer) };
         audioFolder.add(toggleSoundButton,'toggle_sound').name("Toggle Sound");
+        const energyOptions = {
+            pos: true,
+            vel: true,
+            neighbors: true
+        };
 
+        // Handler to call setEnergyID with current values
+        this.updateEnergy = () => {
+            this.audioPlayer.setEnergyID([
+                energyOptions.pos,
+                energyOptions.vel,
+                energyOptions.neighbors
+            ], true);
+        }
+        // Add checkboxes to folder
+        audioFolder.add(energyOptions, 'pos').name('pos').onChange(this.updateEnergy);
+        audioFolder.add(energyOptions, 'vel').name('vel').onChange(this.updateEnergy);
+        audioFolder.add(energyOptions, 'neighbors').name('neighbors').onChange(this.updateEnergy);
+        this.updateEnergy();
 
         const flockingFolder = gui.addFolder('Flocking')
         flockingFolder.add(agents, 'DESIRED_SPEED', 0, 0.4).step(0.001).name("Speed");
@@ -525,7 +543,7 @@ class World{
         hunterFolder.add(hunter, 'CHASE_FACTOR', 0, 0.8).step(0.1).name("Chasing");
         hunterFolder.add(agents, 'FLEE_FACTOR', 0, 10).step(0.1).name("Fleeing");
         hunterFolder.add(agents, 'CONFUSION_FACTOR', 0, 0.5).step(0.005).name("Confusion");
-        
+
         const volumeFolder = gui.addFolder('Volume');
         volumeFolder.add(agents, 'GRADIENT_SCALER', 0, 10).step(0.001).name("Gradient scaling");
         //volumeFolder.add(this, 'CURRENT_VOLUME_INDEX', 0, volumeImages.length).step(1).name("Volume");
