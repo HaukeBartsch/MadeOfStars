@@ -33,6 +33,9 @@ class Agents{
 
         this.config = config;
 
+        // keep the neighboarsPerID around for sound production
+        this.neighborsPerID_cache = null;
+
         this.DESIRED_SPEED = config.DESIRED_SPEED ?? 0.001;  // restores this speed with time
         this.TAU_SPEED = config.TAU_SPEED ?? 0.01;     // how quick to restore the desired speed
 
@@ -161,13 +164,14 @@ class Agents{
             fireColor: this.fireColor,
             fireColor2: this.fireColor2,
             fireColor3: this.fireColor3,
-            bodySize: this.uniforms.bodySize,
-            bodyOpacity: this.uniforms.bodyOpacity,
-            fireR1: this.uniforms.fireR1,
-            fireR2: this.uniforms.fireR2,
+            bodySize: this.uniforms.bodySize.value,
+            bodyOpacity: this.uniforms.bodyOpacity.value,
+            fireR1: this.uniforms.fireR1.value,
+            fireR2: this.uniforms.fireR2.value,
             aspect: this.aspect
         };
     }
+
     /**
      * Update position and velocity of the agents
      * @delta time elapsed since last frame
@@ -176,6 +180,9 @@ class Agents{
     tick(delta){
         // Find neighbors within the visible radius
         let neighborsPerID = this.grid.getDistancesSq(this.posArray, this.VISIBLE_RADIUS, this.USE_GRID);
+        // fill in neighborsPerID_cache
+        this.neighborsPerID_cache = neighborsPerID;
+
         // Communication with the hunter
         this.checkForHunter(this.hunter);
         // Calculate and write down forces
