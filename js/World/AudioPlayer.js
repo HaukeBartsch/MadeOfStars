@@ -267,10 +267,20 @@ class AudioPlayer {
             for (var j = 0; j < energy_source.length; j++) {
                 const noteDurationFactor = DURATION_FACTORS[energy_source[j]];
                 let max = Math.max(...spectrum[j]);
+
+                let noteType = ''
+                if (noteDurationFactor == 1.0) {
+                    noteType = 'wobble';
+                } else if (noteDurationFactor == 0.5) {
+                    noteType = 'flat';
+                } else if (noteDurationFactor == 0.1)
+                    noteType = 'percuss'
+
+
                 if (max === 0) {
-                    spectrum[j] = [spectrum[j], noteDurationFactor]
+                    spectrum[j] = [spectrum[j], noteDurationFactor, noteType]; // no sound, but we return the noteDurationFactor
                 } else {              
-                    spectrum[j] = [spectrum[j].map(val => val / max), noteDurationFactor];
+                    spectrum[j] = [spectrum[j].map(val => val / max), noteDurationFactor, noteType]; // normalize the spectrum
                 }                
             }
             return spectrum; // list of element [spectrum, noteDurationFactor]
