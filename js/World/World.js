@@ -12,7 +12,7 @@ import {
     Mesh,
     Quaternion
 } from 'three';
-import Magnify3d from 'https://esm.sh/magnify-3d';
+//import Magnify3d from 'https://esm.sh/magnify-3d';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TrackballControls } from 'three/addons/controls/TrackballControls.js'
@@ -30,7 +30,7 @@ gui.domElement.id = "gui";
 import { AudioPlayer } from './AudioPlayer.js';
 import { Agents } from './Agents.js';
 import { Hunter } from './Hunter.js';
-import { colors, col_names_db } from './Colors.js';
+import { colors, col_names_db, closestColorName } from './Colors.js';
 
 let scene, camera, renderer;
 let composer;
@@ -240,15 +240,15 @@ class World{
             selectedOption3: config.channelID3, // default channel is "CD4"
             selectedColormap: null // we will store only the individual colors, not the colormap
         }
-        volumeFolder.add(channelValue, 'selectedOption', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (red)").onChange((value) => {
+        const channelValueController1 = volumeFolder.add(channelValue, 'selectedOption', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("CH1 - " + closestColorName(agents.fireColor).replaceAll("_", " ")).onChange((value) => {
             agents.setVolume(volumeImages[value]);
             agents.channelID1 = parseInt(value);
         });
-        volumeFolder.add(channelValue, 'selectedOption2', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (blue)").onChange((value) => {
+        const channelValueController2 = volumeFolder.add(channelValue, 'selectedOption2', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("CH2 - " + closestColorName(agents.fireColor2).replaceAll("_", " ")).onChange((value) => {
             agents.setVolume2(volumeImages[value]);
             agents.channelID2 = parseInt(value);
         });
-        volumeFolder.add(channelValue, 'selectedOption3', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("Channel (yellow)").onChange((value) => {
+        const channelValueController3 = volumeFolder.add(channelValue, 'selectedOption3', { "CD3": 0, "CD20": 1, "CD11b": 2, "CD11c": 3, "CD4": 4, "Catalase": 5, "Hoechst": 6 }).name("CH3 - " + closestColorName(agents.fireColor3).replaceAll("_", " ")).onChange((value) => {
             agents.setVolume3(volumeImages[value]);
             agents.channelID3 = parseInt(value);
         });
@@ -267,6 +267,9 @@ class World{
             agents.uniforms.fireColor.value = new Color(agents.fireColor);
             agents.uniforms.fireColor2.value = new Color(agents.fireColor2);
             agents.uniforms.fireColor3.value = new Color(agents.fireColor3);
+            channelValueController1.name("CH1 - " + closestColorName(agents.fireColor).replaceAll("_", " "));
+            channelValueController2.name("CH2 - " + closestColorName(agents.fireColor2).replaceAll("_", " "));
+            channelValueController3.name("CH3 - " + closestColorName(agents.fireColor3).replaceAll("_", " "));
         });
 
         
@@ -275,15 +278,15 @@ class World{
             selectedOption2: config.enableChannel2 ?? true,
             selectedOption3: config.enableChannel3 ?? false
         }
-        const channelOnController = volumeFolder.add(channelOn, "selectedOption").name("red").onChange((value) => {
+        const channelOnController = volumeFolder.add(channelOn, "selectedOption").name("CH1").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
             agents.enableChannel1 = value;
         });
-        const channelOnController2 = volumeFolder.add(channelOn, "selectedOption2").name("blue").onChange((value) => {
+        const channelOnController2 = volumeFolder.add(channelOn, "selectedOption2").name("CH2").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
             agents.enableChannel2 = value;
         });
-        const channelOnController3 = volumeFolder.add(channelOn, "selectedOption3").name("yellow").onChange((value) => {
+        const channelOnController3 = volumeFolder.add(channelOn, "selectedOption3").name("CH3").onChange((value) => {
             agents.setChannelID([channelOn.selectedOption, channelOn.selectedOption2, channelOn.selectedOption3], true);
             agents.enableChannel3 = value;
         });
