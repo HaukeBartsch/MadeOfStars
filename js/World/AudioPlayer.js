@@ -1,8 +1,9 @@
-const intervals = [0, 2, 4, 7, 9]; // semitones in pentatonic scale
+//const intervals = [0, 2, 4, 7, 9]; // semitones in pentatonic scale
+// const intervals = [0, 2, 4, 7, 9].reverse(); // semitones in pentatonic scale
 // alternative intervals
 //const intervals = [0, 4, 7]; // semitones in major arpeggio
 //const intervals = [0]; // one note
-//const intervals = [0, 5, 7]; // semitones in major arpeggio
+const intervals = [0, 5, 7]; // semitones in major arpeggio
 const rootFreq = 30;
 const DURATION_FACTORS = {
   position:   1.0,
@@ -20,7 +21,9 @@ class AudioPlayer {
     }
 
     start() {
+        // starting the audio player
         if (this.isPlaying) return;
+        console.log("Starting audio player");
         this.isPlaying = true;
         this.scheduleNextNote();
     }
