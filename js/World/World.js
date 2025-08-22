@@ -10,7 +10,8 @@ import {
     BoxGeometry,
     MeshBasicMaterial,
     Mesh,
-    Quaternion
+    Quaternion,
+    Euler
 } from 'three';
 //import Magnify3d from 'https://esm.sh/magnify-3d';
 
@@ -35,7 +36,47 @@ import { colors, col_names_db, closestColorName } from './Colors.js';
 let scene, camera, renderer;
 let composer;
 
+// for a camera animation
+let anim = {
+    setup: function(camera, clock, targetPosition, targetQuaternion, targetUp) {
+        this.startAnimationQuaternion = (new Quaternion()).copy(camera.quaternion);
+        this.startAnimationTime = clock.getElapsedTime();
+        this.animationDuration = 2.0; // 2 seconds
+        // get the Euler target with: euler = camera.rotation.clone();
+        this.targetAnimationQuaternion = targetQuaternion;
+        this.targetAnimationPosition = targetPosition;
+        this.targetUp = targetUp;
+        this.cameraUp0 = camera.up.clone(); // default up vector
+        //this.cameraZoom = camera.position.z; // default zoom
+        this.cameraPos0 = camera.position.clone(); // default position
+        console.log("Initial camera position: " + JSON.stringify(this.cameraPos0));
+        console.log("Target quaternion: " + JSON.stringify(this.targetAnimationQuaternion));
+        
+        this.curQ = new Quaternion(); // current quaternion
+    },
+    update: function(camera, t) {
 
+        camera.position.lerpVectors(this.cameraPos0, this.targetAnimationPosition, t);
+
+        let a = this.startAnimationQuaternion.clone();
+        let b = this.targetAnimationQuaternion.clone();
+        this.curQ.slerpQuaternions(a, b, t);
+        this.curQ.normalize();
+        camera.quaternion.copy(this.curQ);
+
+        camera.up.lerpVectors(this.cameraUp0, this.targetUp, t);
+        // camera.quaternion.slerpQuaternions(this.startAnimationQuaternion, this.targetAnimationQuaternion, t);
+        //camera.up.lerpVectors(this.cameraUp0, new Vector3(0, 1, 0), t);
+        //controls.update();
+    },
+    startAnimationQuaternion: null, // camera.quaternion.clone();
+    startAnimationTime: null, // clock.getElapsedTime();
+    animationDuration: 2.0, // 2 seconds
+    targetAnimationQuaternion: null, // new Quaternion(0, 0, 0, 1);
+    cameraUp0: new Vector3(0, 1, 0), // default up vector,
+    cameraPos0: new Vector3(0, 0, 2), // default position
+    cameraZoom: 2.0 // default zoom
+};
 
 let updatables;
 let clock, stats;
@@ -89,7 +130,7 @@ class World{
         
         // Arcball Controls
         const controls = new ArcballControls(camera, container);
-        
+        this.controls = controls; // provide a handle during animation
         controls.enableDamping = false;
         controls.dampingFactor = 0.1;
         controls.enableZoom = true;
@@ -332,11 +373,50 @@ class World{
         composer = new EffectComposer( renderer );
         composer.addPass( renderScene );
         composer.addPass( bloomPass );
+
+        // add some animations to the camera based on keypress events
+        window.addEventListener("keydown", (event) => {
+            if (event.key == "a") {
+                // reset the camera to the default position
+                anim.setup(this.controls.object, clock, new Vector3(0, 0, 2), new Quaternion(0, 0, 0, 2), new Vector3(0, 1, 0));
+            } else if (event.key == "i") {
+                // zoom in
+                anim.setup(this.controls.object, clock, new Vector3(0, -2, 0), new Quaternion(1, 0, 0, 0.7), new Vector3(0, 0, 1));
+            }
+        });
+
     }
     start(){
         renderer.setAnimationLoop(_ => {
             this.tick();
             //renderer.render(scene, camera);
+
+            // animate the camera if we have a startAnimationQuaternion
+            if (anim.startAnimationQuaternion && anim.targetAnimationQuaternion) {
+                let elapsed = clock.getElapsedTime() - anim.startAnimationTime;
+                if (elapsed < anim.animationDuration) {
+                    anim.update(camera, elapsed / anim.animationDuration);
+                    this.controls.update();
+                } else {
+                    // do the last update?
+                    anim.update(camera, 1.0);
+                    this.controls.update();
+                    anim.startAnimationQuaternion = null;
+                    anim.targetAnimationQuaternion = null;
+                }
+
+                /*if (elapsed < anim.animationDuration) {
+                    let t = elapsed / anim.animationDuration;
+                    camera.quaternion.slerpQuaternions(anim.startAnimationQuaternion, anim.targetAnimationQuaternion, t);
+                    //camera.up.lerpVectors(camera.up, new Vector3(0, 1, 0), t);
+                    //controls.update();
+                } else {
+                    // reset the animation
+                    anim.startAnimationQuaternion = null;
+                    anim.targetAnimationQuaternion = null;
+                }*/
+            }
+
             composer.render();
             //stats.update();
         })
@@ -345,7 +425,7 @@ class World{
         renderer.setAnimationLoop(null);
     }
     tick(){
-        let delta = Math.min(clock.getDelta(), 0.05); //to prevent huge delta value after swithcing the tab
+        let delta = Math.min(clock.getDelta(), 0.05); //to prevent huge delta value after switching the tab
         let elapsed = clock.getElapsedTime();
         for (let object of updatables){
             object.tick(delta, elapsed);
