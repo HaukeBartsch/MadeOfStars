@@ -194,7 +194,8 @@ class World{
         scene.add(agents.mesh, hunter.mesh);
         
         // GUI
-        const firingFolder = gui.addFolder('Firing')
+        const firingFolder = gui.addFolder('Firing');
+        gui.close();
         const fire_cycle_controller = firingFolder.add(agents, 'FIRE_CYCLE', 0, 60).step(0.1).name("Cycle");
         const bpm_controller = firingFolder.add(agents, 'BPM', 1, 1000).step(1).name("BPM").onChange((value) => {
             agents.FIRE_CYCLE = 60.0 / value;
@@ -208,7 +209,7 @@ class World{
         });
 
         firingFolder.add(agents, 'NUDGE_FACTOR', 0, 0.03).step(0.003).name("Nudging");
-        firingFolder.add(agents.uniforms.fireR2, 'value', 0, 0.006).step(0.0001).name("Body fire");
+        firingFolder.add(agents.uniforms.fireR2, 'value', 0, 0.01).step(0.00001).name("Body fire");
         firingFolder.add(agents.uniforms.fireR1, 'value', 0, 0.06).step(0.0001).name("Diffused fire");
         const desyncButton = { desync:function(){  agents.desyncronize(); }};
         firingFolder.add(desyncButton,'desync').name("Desyncronize");
@@ -378,10 +379,12 @@ class World{
         window.addEventListener("keydown", (event) => {
             if (event.key == "a") {
                 // reset the camera to the default position
-                anim.setup(this.controls.object, clock, new Vector3(0, 0, 2), new Quaternion(0, 0, 0, 2), new Vector3(0, 1, 0));
+                anim.setup(this.controls.object, clock, new Vector3(0, 0, 1.2), new Quaternion(0, 0, 0, 2), new Vector3(0, 1, 0));
             } else if (event.key == "i") {
                 // zoom in
-                anim.setup(this.controls.object, clock, new Vector3(0, -2, 0), new Quaternion(1, 0, 0, 0.7), new Vector3(0, 0, 1));
+                anim.setup(this.controls.object, clock, new Vector3(0, -1.2, 0), new Quaternion(1, 0, 0, 0.7), new Vector3(0, 0, 1));
+            } else if (event.key == "1") {
+                anim.setup(this.controls.object, clock, new Vector3(0.1184077458925482, 0.25066848923269364, 0.2918929200499662), new Quaternion(0, 0, 0, 1), new Vector3(0, 1, 0));
             }
         });
 

@@ -95,11 +95,11 @@ class Agents{
         this.fireColor2 = config.fireColor2 ?? "#7474ff";
         this.fireColor3 = config.fireColor3 ?? "#b3e2cd";
 
-        console.log("configured colors ", this.bodyColor, this.fireColor, this.fireColor2, this.fireColor3);
-        console.log("closest colornames are ", closestColorName(this.bodyColor),
-            closestColorName(this.fireColor),
-            closestColorName(this.fireColor2),
-            closestColorName(this.fireColor3));
+        //console.log("configured colors ", this.bodyColor, this.fireColor, this.fireColor2, this.fireColor3);
+        //console.log("closest colornames are ", closestColorName(this.bodyColor),
+        //    closestColorName(this.fireColor),
+        //    closestColorName(this.fireColor2),
+        //    closestColorName(this.fireColor3));
         this.bodySize = config.bodySize ?? 0.02;
         this.bodyOpacity = config.bodyOpacity ?? 0.2;
         this.fireR1 = config.fireR1 ?? 0.002;
