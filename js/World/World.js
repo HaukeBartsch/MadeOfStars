@@ -389,9 +389,9 @@ class World{
             } else if (event.key == "l" ) {
                 anim.setup(this.controls.object, clock, new Vector3(-1.2, 0, 0), new Quaternion(0, -1, 0, 1), new Vector3(0, 1, 0));                
                 
-            }/*else if (event.key == "1") {
-                anim.setup(this.controls.object, clock, new Vector3(0.1184077458925482, 0.25066848923269364, 0.2918929200499662), new Quaternion(0, 0, 0, 1), new Vector3(0, 1, 0));
-            }*/
+            } else if (event.key == "z") {
+                anim.setup(this.controls.object, clock, new Vector3(0.1184077458925482, 0.25066848923269364, 0.2918929200499662), new Quaternion(0.020237566412696164, -0.03962933353722354, -0.008618842570529606, 1), new Vector3(0, 1, 0));
+            }
         });
 
     }
