@@ -215,7 +215,7 @@ class World{
         firingFolder.add(desyncButton,'desync').name("Desyncronize");
         
         this.audioPlayer = new AudioPlayer(agents);
-        //this.audioPlayer.start(); // this immediately starts the audio player, instead wait for user interaction, sound has to be switched on
+        this.audioPlayer.start(); // this immediately starts the audio player, instead wait for user interaction, sound has to be switched on
 
         const audioFolder = gui.addFolder('Audio');
         const toggleSoundButton = { toggle_sound: (function(audioPlayer) {
@@ -383,9 +383,15 @@ class World{
             } else if (event.key == "i") {
                 // zoom in
                 anim.setup(this.controls.object, clock, new Vector3(0, -1.2, 0), new Quaternion(1, 0, 0, 0.7), new Vector3(0, 0, 1));
-            } else if (event.key == "1") {
+            } else if (event.key == "r" ) {
+                anim.setup(this.controls.object, clock, new Vector3(1.2, 0, 0), new Quaternion(0, 1, 0, 1), new Vector3(0, 1, 0));                
+                
+            } else if (event.key == "l" ) {
+                anim.setup(this.controls.object, clock, new Vector3(-1.2, 0, 0), new Quaternion(0, -1, 0, 1), new Vector3(0, 1, 0));                
+                
+            }/*else if (event.key == "1") {
                 anim.setup(this.controls.object, clock, new Vector3(0.1184077458925482, 0.25066848923269364, 0.2918929200499662), new Quaternion(0, 0, 0, 1), new Vector3(0, 1, 0));
-            }
+            }*/
         });
 
     }
