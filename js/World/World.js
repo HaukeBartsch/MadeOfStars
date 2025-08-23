@@ -215,7 +215,7 @@ class World{
         firingFolder.add(desyncButton,'desync').name("Desyncronize");
         
         this.audioPlayer = new AudioPlayer(agents);
-        this.audioPlayer.start(); // this immediately starts the audio player, instead wait for user interaction, sound has to be switched on
+        //this.audioPlayer.start(); // this immediately starts the audio player, instead wait for user interaction, sound has to be switched on
 
         const audioFolder = gui.addFolder('Audio');
         const toggleSoundButton = { toggle_sound: (function(audioPlayer) {
