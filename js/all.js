@@ -51,7 +51,8 @@ async function main() {
         qx: 0,
         qy: 0,
         qz: 1,
-        qw: 1
+        qw: 1,
+        mode: "Kurosawa" // "Kurosawa" or "default"
     };
     var requiredInteger = [ "channelID1","channelID2","channelID3", "numAgents" ];
 

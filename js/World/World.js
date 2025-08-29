@@ -24,9 +24,10 @@ import { Resizer } from "./Resizer.js";
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
 import * as dat from 'dat.gui'
 const gui = new dat.GUI();
-gui.domElement.id = "gui";
+gui.domElement.id = "gui"; 
 
 import { AudioPlayer } from './AudioPlayer.js';
 import { Agents } from './Agents.js';
@@ -374,6 +375,16 @@ class World{
         composer = new EffectComposer( renderer );
         composer.addPass( renderScene );
         composer.addPass( bloomPass );
+
+        if (config.mode == "Kurosawa") {
+            bloomPass.strength = 0.06;
+            bloomPass.radius = 0.55;
+            bloomPass.threshold = 0.01;
+
+            const effectFilm = new FilmPass(0.8, 0.325, 256, true);
+            effectFilm.renderToScreen = true;
+            composer.addPass(effectFilm);
+        }
 
         // add some animations to the camera based on keypress events
         window.addEventListener("keydown", (event) => {
